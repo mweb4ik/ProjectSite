@@ -1,36 +1,90 @@
 <template>
   <div id="app">
-    <h1>Познай Внутреннее устройство компьютера</h1>
-    <img src="/images/pc.png" alt="Компьютер">
-    
-    <div class="button-grid">
+    <div class="particle-container">
+      <span class = "particle"></span>
+        <span class = "particle"></span>
+          <span class = "particle"></span>
+            <span class = "particle"></span>
+              <span class = "particle"></span>
+                <span class = "particle"></span>
+    </div>
+     <div class="button-grid">
     <button @click="loginAdmin">Войти как администратор</button>
     <button @click="loginUser">Войти как пользователь</button>
     <button @click="loginGuest">Войти как гость</button>
     </div>
+    <h1>познай внутреннее устройство компьютера</h1>
+    <img src="/images/pc.png" alt="Компьютер">
+   
     <div v-if="isLoggedIn" class="welcome">
       Добро пожаловать, {{ username }}!
     </div>
   </div>
 </template>
-
 <script>
 export default {
   name: 'App',
+  
   data() {
     return {
       isLoggedIn: false,
       username: 'Пользователь'
     }
   },
+  
   methods: {
-    login() {
-      this.isLoggedIn = true;
-      alert('Вы вошли в систему!');
+    createParticle() {
+      const particle = document.createElement('span')
+      particle.classList.add('particle')
+      
+      const x = Math.random() * 100
+      const duration = 5 + Math.random() * 10
+      const delay = Math.random() * 5
+      const size = 2 + Math.random() * 4
+      
+      particle.style.left = x + '%'
+      particle.style.animationDuration = duration + 's'
+      particle.style.animationDelay = delay + 's'
+      particle.style.width = size + 'px'
+      particle.style.height = size + 'px'
+      
+      const container = document.querySelector('.particle-container')
+      if (container) {
+        container.appendChild(particle)
+      }
     },
+    
+    initParticles() {
+      for (let i = 0; i < 30; i++) {
+        this.createParticle()
+      }
+    },
+    
+    loginAdmin() {
+      this.isLoggedIn = true
+      this.username = 'Администратор'
+      alert('Вы вошли как администратор!')
+    },
+    
+    loginUser() {
+      this.isLoggedIn = true
+      this.username = 'Пользователь'
+      alert('Вы вошли как пользователь!')
+    },
+    
+    loginGuest() {
+      this.isLoggedIn = true
+      this.username = 'Гость'
+      alert('Вы вошли как гость!')
+    },
+    
     register() {
-      alert('Функция регистрации будет реализована позже');
+      alert('Функция регистрации будет реализована позже')
     }
+  },
+  
+  mounted() {
+    this.initParticles()
   }
 }
 </script>
@@ -87,12 +141,33 @@ button {
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
-  cursor: pointer;
+  cursor: pointer;/*при наведении*/
   transition: all 0.3s ease;
 }
 button:hover {
   transform: translateY(-3px);
   box-shadow: 0 0 20px #00FF9D;
+}
+.particle-container{
+  width:100%;
+  height:100%;
+  position:fixed;/*отображение поверх*/
+  pointer-events:none;/*не мешать кликам*/    
+  overflow: hidden;
+  z-index: -1;  /*на заднем фоне поверх кнопок */
+}
+.particle {
+  position: absolute;
+  width: 4px;/* размер частицы */
+  height: 4px;
+  background: rgba(255, 255, 255, 0.8); /* белый прозрачностью */
+  border-radius: 50%;   /*круг */
+  animation: fall linear infinite;
+}
+.welcome {
+  margin-top: 30px;
+  font-size: 24px;
+  color: #00FF9D;
 }
 @media(max-width:768px){
   .button-grid{
@@ -117,11 +192,20 @@ button:hover {
     max-width: 90%; 
   }
 }
-.welcome {
-  margin-top: 30px;
-  font-size: 24px;
-  color: #00FF9D;
+@keyframes fall {
+  0% {
+    transform: translateY(-10px) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(20px); /*падение вниз + немного в сторону */
+    opacity: 0;
+  }
 }
-
-
 </style>
