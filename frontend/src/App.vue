@@ -13,7 +13,7 @@
     <button @click="loginUser">Войти как пользователь</button>
     <button @click="loginGuest">Войти как гость</button>
     </div>
-    <h1>познай внутреннее устройство компьютера</h1>
+    <h1>Познай внутреннее устройство компьютера</h1>
     <img src="/images/pc.png" alt="Компьютер">
    
     <div v-if="isLoggedIn" class="welcome">
@@ -33,26 +33,49 @@ export default {
   },
   
   methods: {
-    createParticle() {
-      const particle = document.createElement('span')
-      particle.classList.add('particle')
-      
-      const x = Math.random() * 100
-      const duration = 5 + Math.random() * 10
-      const delay = Math.random() * 5
-      const size = 2 + Math.random() * 4
-      
-      particle.style.left = x + '%'
-      particle.style.animationDuration = duration + 's'
-      particle.style.animationDelay = delay + 's'
-      particle.style.width = size + 'px'
-      particle.style.height = size + 'px'
-      
-      const container = document.querySelector('.particle-container')
-      if (container) {
-        container.appendChild(particle)
-      }
-    },
+   createParticle() {
+  const particle = document.createElement('span')
+  particle.classList.add('particle')
+  
+  const x = Math.random() * 100
+  const duration = 5 + Math.random() * 10
+  const delay = Math.random() * 5
+  const size = 2 + Math.random() * 4
+  
+  // случайная форма
+  const shapeType = Math.floor(Math.random() * 3)
+  if (shapeType === 0) {
+    particle.style.borderRadius = '50%'  // круг
+  } else if (shapeType === 1) {
+    particle.style.borderRadius = '0%'   // квадрат
+  } else {
+    particle.style.borderRadius = '30%'  // скруглённый квадрат
+  }
+  
+  //случайный градиент из палитры сайта
+  const colors = [
+    'linear-gradient(135deg, #00FF9D, #00A3FF)',
+    'linear-gradient(135deg, #00A3FF, #00FF9D)',
+    'linear-gradient(135deg, #00FF9D, #FFFFFF)',
+    'linear-gradient(135deg, #00A3FF, #FFFFFF)'
+  ]
+  particle.style.background = colors[Math.floor(Math.random() * colors.length)]
+  
+  //свечение в цвет частицы
+  particle.style.boxShadow = '0 0 6px rgba(0, 255, 157, 0.8)'
+  
+  //размеры и позиция
+  particle.style.left = x + '%'
+  particle.style.animationDuration = duration + 's'
+  particle.style.animationDelay = delay + 's'
+  particle.style.width = size + 'px'
+  particle.style.height = size + 'px'
+  
+  const container = document.querySelector('.particle-container')
+  if (container) {
+    container.appendChild(particle)
+  }
+},
     
     initParticles() {
       for (let i = 0; i < 30; i++) {
@@ -116,10 +139,8 @@ h1 {
 
 img {
   max-width: 50%;
-  border: 2px solid #00A3FF;
-  border-radius: 12px;
   margin: 30px 0;
-  box-shadow: 0 0 30px rgba(0, 163, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 163, 255, 0.5);
 }
 img:hover{transform: TranslateY(4px);
 box-shadow:0 0 30px rgba(0, 255, 157, 0.1);
@@ -134,15 +155,17 @@ box-shadow:0 0 30px rgba(0, 255, 157, 0.1);
 
 button {
   background: linear-gradient(135deg, #00FF9D, #00A3FF);
-  border: 2px solid #00FF9D;
   color: #000;
   padding: 12px 24px;
   margin:0;
+  font-family: 'Rajdhani', sans-serif;
+  border: 2px solid #00FF9D;
   border-radius: 12px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;/*при наведении*/
   transition: all 0.3s ease;
+   letter-spacing: 0.5px;
 }
 button:hover {
   transform: translateY(-3px);
@@ -154,20 +177,30 @@ button:hover {
   position:fixed;/*отображение поверх*/
   pointer-events:none;/*не мешать кликам*/    
   overflow: hidden;
-  z-index: -1;  /*на заднем фоне поверх кнопок */
+  z-index: -1;  /*на заднем фоне  */
 }
 .particle {
   position: absolute;
   width: 4px;/* размер частицы */
   height: 4px;
-  background: rgba(255, 255, 255, 0.8); /* белый прозрачностью */
+  background: rgba(254, 254, 254, 0.7); /* белая прозрачность*/
   border-radius: 50%;   /*круг */
   animation: fall linear infinite;
 }
+h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 35px;
+  font-weight: 700;
+  letter-spacing: 2px;  /*разреженные буквы */
+  text-transform: uppercase;  /* Все заглавные */
+}
+
+
 .welcome {
-  margin-top: 30px;
+  font-family: 'Exo 2', sans-serif;
   font-size: 24px;
-  color: #00FF9D;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 @media(max-width:768px){
   .button-grid{
