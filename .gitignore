@@ -1,7 +1,8 @@
-##Секреты
+﻿## Секреты
 .env
 .env.*
 node_modules/
+
 ## Visual Studio
 .vs/
 [Bb]in/
@@ -10,7 +11,7 @@ node_modules/
 *.suo
 *.sln.docstates
 
-## База данных и секреты 
+## База данных и секреты
 backend/Data/*.db
 backend/Data/admin-keys.json
 backend/appsettings.Development.json
@@ -45,3 +46,13 @@ frontend/.vite/
 frontend/.output/
 backend/bin/
 backend/obj/
+
+## App.vue backups
+frontend/src/App.vue.backup
+frontend/src/App.vue.bak
+frontend/src/App.vue.old
+frontend/src/App.vue.new
+frontend/src/App.vue.orig
+*.vue.backup
+*.vue.bak
+*.vue.old
