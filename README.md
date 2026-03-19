@@ -78,5 +78,4 @@ ProjectSite/
 - Цветовая схема: неоновый зелёный (#00FF9D) и синий (#00A3FF)
 - Шрифты: Orbitron, Exo 2, Rajdhani
 - Эффекты: свечение, градиенты, glassmorphism
-### Примерный макет: <[https://www.figma.com/make/IYxIXMsARj55GrrFy14SF9/Pc?t=rNmxAHkCCLFclOOV-1](https://proud-eye-02241552.figma.site/)>
 
