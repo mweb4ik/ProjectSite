@@ -1,6 +1,5 @@
-﻿<template>
-  <div id="app">
-      <router-view /> 
+<template>
+  <div class="home-container">
     <!-- Loading Skeleton -->
     <div v-if="isLoading" class="skeleton-container">
       <div class="skeleton-buttons">
@@ -11,13 +10,13 @@
       <div class="skeleton-title"></div>
       <div class="skeleton-image"></div>
     </div>
-    
+
     <!-- Main Content -->
     <div v-else>
       <div class="particle-container">
         <span class="particle" v-for="i in 50" :key="i" :style="getParticleStyle(i)"></span>
       </div>
-      
+
       <div class="button-grid">
         <button @click="loginAdmin" class="btn-primary">
           Войти как администратор
@@ -29,14 +28,14 @@
           Войти как гость
         </button>
       </div>
-      
+
       <h1 class="title-glitch">Познай внутреннее устройство компьютера</h1>
-      
+
       <div class="image-container">
         <img src="/images/pc.png" alt="Computer" class="pc-image" @load="onImageLoad">
         <div class="image-glow"></div>
       </div>
-      
+
       <div v-if="isLoggedIn" class="welcome">
         Приветствую, {{ username }}!
       </div>
@@ -46,8 +45,8 @@
 
 <script>
 export default {
-  name: 'App',
-  
+  name: 'Home',
+
   data() {
     return {
       isLoggedIn: false,
@@ -56,7 +55,7 @@ export default {
       imageLoaded: false
     }
   },
-  
+
   methods: {
     getParticleStyle(index) {
       const x = Math.random() * 100
@@ -71,35 +70,35 @@ export default {
         height: size + 'px'
       }
     },
-    
+
     onImageLoad() {
       this.imageLoaded = true
     },
-    
+
     loginAdmin() {
       this.isLoggedIn = true
       this.username = 'Администратор'
       this.showNotification('Вход как администратор', 'успех')
     },
-    
+
     loginUser() {
       this.isLoggedIn = true
       this.username = 'Пользователь'
       this.showNotification('Вход как пользователь', 'успех')
       this.$router.push('/login')
     },
-    
+
     loginGuest() {
       this.isLoggedIn = true
       this.username = 'Гость'
       this.showNotification('Вход как гость', 'информация')
     },
-    
+
     showNotification(message, type) {
       console.log('[' + type + ']: ' + message)
     }
   },
-  
+
   mounted() {
     setTimeout(() => {
       this.isLoading = false
@@ -108,28 +107,15 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 /* ========== Global Styles ========== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background: linear-gradient(135deg, #0D0D0D 0%, #1a1a2e 100%);
-  color: #FFFFFF;
-  font-family: 'Exo 2', sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-#app {
+.home-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 60px 20px;
   position: relative;
   z-index: 1;
+  min-height: 100vh;
 }
 
 /* ========== Loading Skeleton ========== */
@@ -395,19 +381,19 @@ button:active {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
   }
-  
+
   h1 {
     font-size: 32px;
   }
-  
+
   .pc-image {
     max-width: 70%;
   }
-  
+
   .skeleton-buttons {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .skeleton-image {
     width: 70%;
   }
@@ -418,25 +404,25 @@ button:active {
     grid-template-columns: 1fr;
     max-width: 300px;
   }
-  
+
   h1 {
     font-size: 26px;
     letter-spacing: 1px;
   }
-  
+
   button {
     padding: 14px 20px;
     font-size: 15px;
   }
-  
+
   .pc-image {
     max-width: 90%;
   }
   
-  #app {
+  .home-container {
     padding: 30px 15px;
   }
-  
+
   .skeleton-buttons {
     grid-template-columns: 1fr;
   }
