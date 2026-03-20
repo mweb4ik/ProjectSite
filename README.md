@@ -169,7 +169,7 @@ ProjectSite/
 |-------|----------|----------|
 | POST | `/api/overclocking/simulate` | Симуляция разгона |
 | GET | `/api/overclocking/leaderboard` | Таблица лидеров |
-| POST | `/api/overclocking/save-profile` | Сохранить профиль(соранение текущего состояния с последующей возможностью простмотра предыдущего)|
+| POST | `/api/overclocking/save-profile` | Сохранить  профиль(соранение текущего состояния с последующей возможностью простмотра предыдущего)|
 
 ### Users (Admin)
 | Метод | Endpoint | Описание |
@@ -181,6 +181,6 @@ ProjectSite/
 
 ## Аутентификация
 
-- **JWT Token** — Access (15 мин) + Refresh (7 дней)
+- **JWT Token** — Access (15 мин) + Refresh (1 день)
 - **Роли:** Guest, User, Admin
 
