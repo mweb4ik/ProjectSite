@@ -122,4 +122,81 @@ ProjectSite/
 - Цветовая схема: неоновый зелёный (#00FF9D) и синий (#00A3FF)
 - Шрифты: Orbitron, Exo 2, Rajdhani
 - Эффекты: свечение, градиенты, glassmorphism
+## Модели данных
+
+**User** — `id, username, email, passwordHash, role (Guest/User/Admin), createdAt`
+
+**Component** — `id, name, category (CPU/GPU/RAM/etc.), manufacturer, price, specifications, socket, powerConsumption`
+
+**PCBuild** — `id, userId, name, componentIds[], totalPrice, isCompatible`
+
+**QuizResult** — `id, userId, score, totalQuestions, completedAt`
+
+---
+
+## API Endpoints
+
+###  Auth
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| POST | `/api/auth/register` | Регистрация |
+| POST | `/api/auth/login` | Вход |
+| POST | `/api/auth/forgot-password` | Восстановление пароля |
+| GET | `/api/auth/me` | Текущий пользователь |
+
+### Components
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| GET | `/api/components` | Список комплектующих |
+| GET | `/api/components/:id` | Деталь компонента |
+| GET | `/api/components/categories` | Категории |
+| POST | `/api/components/check-compatibility` | Проверка совместимости |
+
+### Builds
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| GET | `/api/builds` | Список сборок пользователя |
+| POST | `/api/builds` | Создать сборку |
+| PUT | `/api/builds/:id` | Обновить сборку |
+| DELETE | `/api/builds/:id` | Удалить сборку |
+
+### Quiz
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| GET | `/api/quiz` | Вопросы викторины |
+| POST | `/api/quiz/submit` | Отправка ответов |
+| GET | `/api/quiz/results` | История результатов |
+
+### Cables
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| GET | `/api/cables` | Список кабелей |
+| GET | `/api/cables/:type` | Детали типа кабеля |
+
+### BIOS
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| GET | `/api/bios` | Список BIOS для платы |
+| GET | `/api/bios/:id` | Детали версии |
+| POST | `/api/bios/check-update` | Проверка обновления |
+
+### Overclocking
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| POST | `/api/overclocking/simulate` | Симуляция разгона |
+| GET | `/api/overclocking/leaderboard` | Таблица лидеров |
+| POST | `/api/overclocking/save-profile` | Сохранить профиль |
+
+### Users (Admin)
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| GET | `/api/users` | Список пользователей |
+| DELETE | `/api/users/:id` | Удалить пользователя |
+
+---
+
+## Аутентификация
+
+- **JWT Token** — Access (15 мин) + Refresh (7 дней)
+- **Роли:** Guest, User, Admin
 
