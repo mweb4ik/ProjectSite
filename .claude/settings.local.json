@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc:*)",
+      "Bash(find /e/MyCODE/Mate2 -name vite.config.* -o -name .env*)",
+      "Bash(dotnet build:*)",
+      "Bash(start cmd:*)",
+      "Bash(curl -s http://localhost:5124/swagger/index.html)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s http://localhost:5173/src/App.vue)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}
