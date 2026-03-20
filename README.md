@@ -155,7 +155,7 @@ ProjectSite/
 |-------|----------|----------|
 | GET | `/api/builds` | Список сборок пользователя |
 | POST | `/api/builds` | Создать сборку |
-| PUT | `/api/builds/:id` | Обновить сборку |
+| POST | `/api/builds/:id` | Обновить сборку |
 | DELETE | `/api/builds/:id` | Удалить сборку |
 
 ### Quiz
