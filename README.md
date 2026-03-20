@@ -183,7 +183,7 @@ ProjectSite/
 |-------|----------|----------|
 | POST | `/api/overclocking/simulate` | Симуляция разгона |
 | GET | `/api/overclocking/leaderboard` | Таблица лидеров |
-| POST | `/api/overclocking/save-profile` | Сохранить профиль(соранение текущего состояния с последующейвозможностью простмотра предыдущего)|
+| POST | `/api/overclocking/save-profile` | Сохранить профиль(соранение текущего состояния с последующей возможностью простмотра предыдущего)|
 
 ### Users (Admin)
 | Метод | Endpoint | Описание |
