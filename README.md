@@ -131,7 +131,7 @@ ProjectSite/
 |-------|----------|----------|
 | POST | `/api/auth/register` | Регистрация |
 | GET | `/api/auth/login` | Вход |
-| POST | `/api/auth/forgot-password` | Восстановление пароля |
+| PUT | `/api/auth/forgot-password` | Восстановление пароля |
 | GET | `/api/auth/me` | Текущий пользователь |
 
 ### Components
