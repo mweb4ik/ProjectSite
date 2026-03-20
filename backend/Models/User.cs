@@ -1,9 +1,10 @@
-﻿using System;
+namespace PcComponentsApi.Models;
 
 public class User
 {
-	public string Id { get; set; }
-	public string Email { get; set; }
-    public string PasswordHash { get; set; }
-	public DataTime atTime { get; set; }
+    public string Id { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
+    public string Role { get; set; } = "standard";  // "admin" или "standard"
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
