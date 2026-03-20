@@ -138,7 +138,7 @@ ProjectSite/
 | Метод | Endpoint | Описание |
 |-------|----------|----------|
 | POST | `/api/auth/register` | Регистрация |
-| POST | `/api/auth/login` | Вход |
+| GET | `/api/auth/login` | Вход |
 | POST | `/api/auth/forgot-password` | Восстановление пароля |
 | GET | `/api/auth/me` | Текущий пользователь |
 
@@ -183,7 +183,7 @@ ProjectSite/
 |-------|----------|----------|
 | POST | `/api/overclocking/simulate` | Симуляция разгона |
 | GET | `/api/overclocking/leaderboard` | Таблица лидеров |
-| POST | `/api/overclocking/save-profile` | Сохранить профиль |
+| POST | `/api/overclocking/save-profile` | Сохранить профиль(соранение текущего состояния с последующейвозможностью простмотра предыдущего)|
 
 ### Users (Admin)
 | Метод | Endpoint | Описание |
