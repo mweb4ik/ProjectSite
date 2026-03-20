@@ -132,8 +132,6 @@ ProjectSite/
 
 **QuizResult** — `id, userId, score, totalQuestions, completedAt`
 
----
-
 ## API Endpoints
 
 ###  Auth
