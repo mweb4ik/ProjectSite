@@ -16,14 +16,13 @@
       <div v-if="error" class="error-msg">{{ error }}</div>
 
       <div class="form-group">
-        <label>Email</label>
-        <input v-model="form.email" type="email" placeholder="your@email.com" @keyup.enter="submitLogin" />
+        <label>Login (Email или Username)</label>
+        <input v-model="form.login" type="text" placeholder="email или username" @keyup.enter="submitLogin" />
       </div>
       <div class="form-group">
         <label>Пароль</label>
         <input v-model="form.password" type="password" placeholder="••••••••" @keyup.enter="submitLogin" />
       </div>
-
       <button class="btn btn-primary full" :disabled="loading" @click="submitLogin">
         {{ loading ? 'Вход...' : 'Войти' }}
       </button>
@@ -38,6 +37,11 @@
     <div v-if="showRegister" class="auth-card">
       <h2>Регистрация</h2>
       <div v-if="error" class="error-msg">{{ error }}</div>
+     <div class="form-group">
+        <label>Username</label>
+        <input v-model="form.username" type="username" placeholder="nickname" @keyup.enter="submitRegister" />
+      </div>
+
 
       <div class="form-group">
         <label>Email</label>
@@ -47,7 +51,6 @@
         <label>Пароль <span class="hint">(минимум 6 символов)</span></label>
         <input v-model="form.password" type="password" placeholder="••••••••" @keyup.enter="submitRegister" />
       </div>
-
       <button class="btn btn-primary full" :disabled="loading" @click="submitRegister">
         {{ loading ? 'Регистрация...' : 'Создать аккаунт' }}
       </button>
@@ -77,7 +80,11 @@ export default {
       showRegister: false,
       loading: false,
       error: '',
-      form: { email: '', password: '' }
+      form: {
+        username:'',
+        login: '',
+        email: '',
+         password: '' }
     }
   },
   mounted() {
@@ -88,28 +95,31 @@ export default {
   methods: {
     switchTo(page) {
       this.error = ''
-      this.form = { email: '', password: '' }
+      this.form = {username:'', email: '', password: '' }
       this.showLogin = page === 'login'
       this.showRegister = page === 'register'
     },
     closeAuth() {
       this.error = ''
-      this.form = { email: '', password: '' }
+      this.form = {username:'',email: '', password: '' }
       this.showLogin = false
       this.showRegister = false
     },
     async submitLogin() {
-      if (!this.form.email || !this.form.password) {
-        this.error = 'Заполните все поля'
-        return
-      }
+      if (!this.form.login || !this.form.password) {
+  this.error = 'Заполните все поля'
+  return
+}
+
       this.loading = true
       this.error = ''
       try {
         const res = await fetch(`${API}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: this.form.email, password: this.form.password })
+          body: JSON.stringify({
+            username: this.form.login,
+            password: this.form.password })
         })
         const data = await res.json()
         if (!res.ok) {
@@ -117,7 +127,10 @@ export default {
           return
         }
         localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }))
+        localStorage.setItem('user', JSON.stringify({
+          username: data.username,
+          email: data.email,
+          role: data.role }))
         this.router.push('/home')
       } catch {
         this.error = 'Сервер недоступен. Убедитесь, что backend запущен.'
@@ -126,10 +139,10 @@ export default {
       }
     },
     async submitRegister() {
-      if (!this.form.email || !this.form.password) {
-        this.error = 'Заполните все поля'
-        return
-      }
+      if (!this.form.username || !this.form.email || !this.form.password) {
+      this.error = 'Заполните все поля'
+      return
+}
       if (this.form.password.length < 6) {
         this.error = 'Пароль должен быть не менее 6 символов'
         return
@@ -140,7 +153,9 @@ export default {
         const res = await fetch(`${API}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: this.form.email, password: this.form.password })
+          body: JSON.stringify({username: this.form.username,
+             email: this.form.email,
+             password: this.form.password })
         })
         const data = await res.json()
         if (!res.ok) {
@@ -148,7 +163,7 @@ export default {
           return
         }
         localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }))
+        localStorage.setItem('user', JSON.stringify({username: data.username, email: data.email, role: data.role }))
         this.router.push('/home')
       } catch {
         this.error = 'Сервер недоступен. Убедитесь, что backend запущен.'
