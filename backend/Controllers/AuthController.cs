@@ -8,7 +8,7 @@ using PcComponentsApi.Data;
 using PcComponentsApi.Models;
 using MailKit.Net.Smtp;
 using MimeKit;
-
+using Microsoft.AspNetCore.Authorization;
 namespace PcComponentsApi.Controllers;
 
 [ApiController]
@@ -160,5 +160,20 @@ private string GenerateJwt(User user)
     );
 
     return new JwtSecurityTokenHandler().WriteToken(token);
+}
+[HttpGet("me")]
+[Authorize]
+public IActionResult Me()
+{
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var user = _db.Users.Find(userId);
+if (user == null)
+    return NotFound();
+        return Ok(new{
+            Username = user.Username,
+            Email = user.Email,
+            Role = user.Role
+        });
 }
 }

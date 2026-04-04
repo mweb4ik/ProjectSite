@@ -78,12 +78,29 @@ export default {
       loading:true
     }
   },
-  mounted() {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      this.router.push('/')
-      return
-    }
+    async mounted() {
+  const token = localStorage.getItem('token')
+  if (!token) {
+    this.router.push('/')
+    return
+  }
+
+  try {
+    const res = await fetch('http://localhost:5124/api/auth/me', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    const data = await res.json()
+    this.user = data
+
+  } catch (e) {
+    console.error(e)
+  }
+
+  this.loading = false
+}
     setTimeout(() => {
       const saved = localStorage.getItem('user')
 if (saved) this.user = JSON.parse(saved)
