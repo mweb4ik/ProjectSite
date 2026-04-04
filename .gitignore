@@ -45,3 +45,8 @@ frontend/.vite/
 frontend/.output/
 backend/bin/
 backend/obj/
+
+##Игнор бд 
+*.db
+*.db-shm
+*.db-wal

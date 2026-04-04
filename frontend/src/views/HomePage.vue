@@ -1,15 +1,23 @@
 <template>
   <div id="app">
     <header class="header">
+    </header>
+
+    <main class="content">
+      <div class="sections-grid">
+        <button @click="goTo('/lab')" class="section-btn">⚡ Лаборатория разгона</button>
+        <button @click="goTo('/quiz')" class="section-btn">🧠 Викторина</button>
+        <button @click="goTo('/builder')" class="section-btn">🛠️ Сборка ПК</button>
+        <button @click="goTo('/bios')" class="section-btn">💾 BIOS / UEFI</button>
+        <button @click="goTo('/profile')" class="section-btn">👤 Личный кабинет</button>
+        <button @click="goTo('/admin')" class="section-btn">🛡️ Админ панель</button>
+      </div>
       <h1 class="highlight">Познай Внутреннее устройство компьютера</h1>
       <div class="user-info">
         <span class="user-email">{{ user.email }}</span>
         <span class="role-badge" :class="user.role">{{ user.role }}</span>
         <button class="btn btn-outline" @click="logout">Выйти</button>
       </div>
-    </header>
-
-    <main class="content">
        <!--Скелетон-->
   <div v-if="loading" class="skeleton-wrapper">
     <div class="skeleton-img"></div>
@@ -253,5 +261,53 @@ this.loading = false
 
 .skeleton-btn {
   height: 50px;
+}
+.link {
+  background: none;
+  border: none;
+  color: #00A3FF;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.left-side {
+  display: flex;
+  align-items: center;
+}
+
+.btn-profile {
+  background: linear-gradient(135deg, #00A3FF, #00FF9D);
+  color: white;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.btn-profile:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.section-btn {
+  padding: 15px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  background: linear-gradient(135deg, #00FF9D, #00A3FF);
+  color: white;
+  transition: 0.3s;
+  box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+}
+
+.section-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 25px rgba(0, 163, 255, 0.6);
 }
 </style>

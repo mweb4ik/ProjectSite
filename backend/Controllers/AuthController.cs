@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PcComponentsApi.Data;
 using PcComponentsApi.Models;
+using MailKit.Net.Smtp;
+using MimeKit;
 
 namespace PcComponentsApi.Controllers;
 
@@ -71,26 +73,92 @@ public class AuthController : ControllerBase
         Email = user.Email,
          Role = user.Role });
     }
+[HttpPost("forgot-password")]
+public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
+{
+    var email = req.Email?.Trim().ToLower();
 
-    private string GenerateJwt(User user)
+    var user = await _db.Users
+        .FirstOrDefaultAsync(u => u.Email.ToLower() == email);
+
+    if (user == null)
+        return Ok();
+
+    var resetToken = Guid.NewGuid().ToString();
+
+    user.ResetToken = resetToken;
+    user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(30);
+
+    await _db.SaveChangesAsync();
+
+    try
     {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345"));
-
-        var claims = new[]
+        var emailMessage = new MimeMessage();
+        emailMessage.From.Add(new MailboxAddress("Pc-Architekture website", "kiseluk780@gmail.com"));
+        emailMessage.To.Add(new MailboxAddress(user.Username, user.Email));
+        emailMessage.Subject = "Сброс пароля";
+        emailMessage.Body = new TextPart("plain")
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
+            Text = $"http://localhost:5173/reset-password?token={resetToken}"
         };
 
-        var token = new JwtSecurityToken(
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(12),
-            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        using var client = new MailKit.Net.Smtp.SmtpClient();
+        await client.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+        await client.AuthenticateAsync("kiseluk780@gmail.com", "tgndfnuxzcdrodsk");
+        await client.SendAsync(emailMessage);
+        await client.DisconnectAsync(true);
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex);
+    }
+
+    return Ok();
+}
+[HttpPost("reset-password")]
+public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
+{
+    var user = await _db.Users.FirstOrDefaultAsync(u => u.ResetToken == req.Token);
+
+    if (user == null || user.ResetTokenExpiry < DateTime.UtcNow)
+        return BadRequest(new { message = "Неверный или просроченный токен" });
+
+    user.PasswordHash = PasswordService.HashPassword(req.NewPassword);
+
+    user.ResetToken = null;
+    user.ResetTokenExpiry = null;
+
+    await _db.SaveChangesAsync();
+
+    var jwt = GenerateJwt(user);
+
+    return Ok(new AuthResponse
+    {
+        Token = jwt,
+        Username = user.Username,
+        Email = user.Email,
+        Role = user.Role
+    });
+}
+private string GenerateJwt(User user)
+{
+    var key = new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345"));
+
+    var claims = new[]
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Role, user.Role)
+    };
+
+    var token = new JwtSecurityToken(
+        claims: claims,
+        expires: DateTime.UtcNow.AddHours(12),
+        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+    );
+
+    return new JwtSecurityTokenHandler().WriteToken(token);
+}
 }
