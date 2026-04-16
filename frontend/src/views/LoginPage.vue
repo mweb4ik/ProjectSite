@@ -9,10 +9,12 @@
         <button class="btn btn-secondary" @click="showRegister = true">Зарегистрироваться</button>
       </div>
     </div>
+
     <div v-if="currentUser" class="user-info">
-      <p>Пользоветель: {{ currentUser.Username }}!</p>
+      <p>Пользователь: {{ currentUser.Username }}!</p>
       <p>Роль: {{ currentUser.Role }}</p>
     </div>
+
     <!-- Форма входа -->
     <div v-if="showLogin" class="auth-card">
       <h2>Вход в систему</h2>
@@ -26,17 +28,19 @@
         <label>Пароль</label>
         <input v-model="form.Password" type="password" placeholder="••••••••" @keyup.enter="submitLogin" />
       </div>
+
       <button class="btn btn-primary full" :disabled="loading" @click="submitLogin">
         {{ loading ? 'Вход...' : 'Войти' }}
       </button>
+
       <p class="switch-link">
         Нет аккаунта?
         <a @click="switchTo('register')">Зарегистрироваться</a>
       </p>
+
       <button class="btn btn-ghost" @click="closeAuth">← Назад</button>
-      <p class="switch-link">
-        <a @click="router.push('/forgot-password')">Забыли пароль?</a>
-      </p>
+
+      <button class="btn-ghost link" @click="goToForgot">Забыли пароль?</button>
     </div>
 
     <!-- Форма регистрации -->
@@ -48,7 +52,6 @@
         <label>Username</label>
         <input v-model="form.Username" type="text" placeholder="nickname" @keyup.enter="submitRegister" />
       </div>
-
       <div class="form-group">
         <label>Email</label>
         <input v-model="form.Email" type="email" placeholder="your@email.com" @keyup.enter="submitRegister" />
@@ -57,164 +60,205 @@
         <label>Пароль <span class="hint">(минимум 6 символов)</span></label>
         <input v-model="form.Password" type="password" placeholder="••••••••" @keyup.enter="submitRegister" />
       </div>
+      <div class="form-group">
+        <label>Подтвердите пароль <span class="hint">(минимум 6 символов)</span></label>
+        <input v-model="form.ConfirmPassword" type="password" placeholder="••••••••" @keyup.enter="submitRegister" />
+      </div>
       <button class="btn btn-primary full" :disabled="loading" @click="submitRegister">
         {{ loading ? 'Регистрация...' : 'Создать аккаунт' }}
       </button>
+
       <p class="switch-link">
         Уже есть аккаунт?
         <a @click="switchTo('login')">Войти</a>
       </p>
+
       <button class="btn btn-ghost" @click="closeAuth">← Назад</button>
     </div>
+
+    <!-- Гость -->
+    <button class="btn btn-ghost" @click="enterAsGuest">
+      Войти как гость
+    </button>
   </div>
 </template>
 
 <script>
-import { useRouter } from 'vue-router'
-
 const API = 'http://localhost:5124/api/auth'
 
 export default {
   name: 'LoginPage',
-  setup() {
-    const router = useRouter()
-    return { router }
-  },
   data() {
     return {
       showLogin: false,
       showRegister: false,
-      showForgotPassword: false,
       loading: false,
       error: '',
       form: {
         Username: '',
         Login: '',
         Email: '',
-        Password: ''
+        Password: '',
+        ConfirmPassword:''
       },
-      currentUser: null 
+      currentUser: null
     }
   },
   mounted() {
-  const token = localStorage.getItem('token')
-  const user = localStorage.getItem('user')
+    const token = localStorage.getItem('token')
+    const user = localStorage.getItem('user')
 
-  if (token && user) {
-    this.currentUser = JSON.parse(user)
-    this.router.push('/home')
-  }
-},
+    if (token && user) {
+      this.currentUser = JSON.parse(user)
+      this.$router.push('/home')
+    }
+    
+  },
   methods: {
     switchTo(page) {
       this.error = ''
       this.form = { Username: '', Login: '', Email: '', Password: '' }
       this.showLogin = page === 'login'
       this.showRegister = page === 'register'
-      this.showForgotPassword = page === 'password-reset'
     },
     closeAuth() {
       this.error = ''
       this.form = { Username: '', Login: '', Email: '', Password: '' }
       this.showLogin = false
       this.showRegister = false
-      this.showForgotPassword = false
     },
-    async submitLogin() {
-  if (!this.form.Login || !this.form.Password) {
-    this.error = 'Заполните все поля'
-    return
-  }
-
-  this.loading = true
-  this.error = ''
-
-  try {
-    const res = await fetch(`${API}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        Login: this.form.Login,
-        Password: this.form.Password
-      })
-    })
-
-    const data = await res.json()  
-
-    if (!res.ok) {
-      this.error = data.message || 'Ошибка входа'
-      return
-    }
-
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify({
-      Username: data.Username,
-      Email: data.Email,
-      Role: data.Role
-    }))
-
-    this.currentUser = {
-      Username: data.Username,
-      Email: data.Email,
-      Role: data.Role
-    }
-
-    this.router.push('/home')
-
-  } catch {
-    this.error = 'Сервер недоступен. Убедитесь, что backend запущен.'
-  } finally {
-    this.loading = false
-  }
+    goToForgot() {
+  this.showLogin = false
+  this.showRegister = false
+  this.$router.push({ name: 'forgot-password' }).catch(() => {})
 },
-async submitRegister() {
-  if (!this.form.Username || !this.form.Password || !this.form.Email) {
-    this.error = 'Заполните все поля'
-    return
+    async submitLogin() {
+      if (!this.form.Login || !this.form.Password) {
+        this.error = 'Заполните все поля'
+        return
+      }
+      this.loading = true
+      this.error = ''
+
+      try {
+        const res = await fetch(`${API}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            Login: this.form.Login,
+            Password: this.form.Password
+          })
+        })
+
+        const data = await res.json()
+        if (!res.ok) {
+          this.error = data.message || 'Ошибка входа'
+          return
+        }
+
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify({
+          Username: data.Username,
+          Email: data.Email,
+          Role: data.Role
+        }))
+
+        this.currentUser = {
+          Username: data.Username,
+          Email: data.Email,
+          Role: data.Role
+        }
+
+        this.$router.push('/home')
+      } catch {
+        this.error = 'Сервер недоступен. Убедитесь, что backend запущен.'
+      } finally {
+        this.loading = false
+      }
+    },
+    async submitRegister() {
+     
+      this.loading = true
+      this.error = ''
+      if(!this.validatePassword())return
+      if (!this.form.Username || !this.form.Password || !this.form.Email) {
+        this.error = 'Заполните все поля'
+        return
+      }
+      try {
+        const res = await fetch(`${API}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            Username: this.form.Username,
+            Email: this.form.Email,
+            Password: this.form.Password
+          })
+        })
+
+        const data = await res.json()
+        if (!res.ok) {
+          this.error = data.message || 'Ошибка регистрации'
+          return
+        }
+
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify({
+          Username: data.Username,
+          Email: data.Email,
+          Role: data.Role
+        }))
+
+        this.currentUser = {
+          Username: data.Username,
+          Email: data.Email,
+          Role: data.Role
+        }
+
+        this.$router.push('/home')
+      } catch {
+        this.error = 'Сервер недоступен. Убедитесь, что backend запущен.'
+      } finally {
+        this.loading = false
+      }
+    },
+    enterAsGuest() {
+      const guestUser = {
+        Username: 'Guest',
+        Email: 'guest@local',
+        Role: 'guest'
+      }
+      localStorage.setItem('user', JSON.stringify(guestUser))
+      localStorage.removeItem('token')
+      this.$router.push('/home')
+    },
+    validatePassword() {
+  const p = this.form.Password
+  const cp = this.form.ConfirmPassword
+
+  if (p.length < 6) {
+    this.error = 'Пароль должен быть минимум 6 символов'
+    return false
   }
 
-  this.loading = true
-  this.error = ''
-
-  try {
-    const res = await fetch(`${API}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        Username: this.form.Username,
-        Email: this.form.Email,
-        Password: this.form.Password
-      })
-    })
-
-    const data = await res.json() 
-
-    if (!res.ok) {
-      this.error = data.message || 'Ошибка входа'
-      return
-    }
-
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify({
-      Username: data.Username,
-      Email: data.Email,
-      Role: data.Role
-    }))
-
-    this.currentUser = {
-      Username: data.Username,
-      Email: data.Email,
-      Role: data.Role
-    }
-
-    this.router.push('/home')
-
-  } catch {
-    this.error = 'Сервер недоступен. Убедитесь, что backend запущен.'
-  } finally {
-    this.loading = false
+  if (!/[A-Z]/.test(p)) {
+    this.error = 'Пароль должен содержать хотя бы 1 заглавную букву'
+    return false
   }
+
+  if (!/[0-9]/.test(p)) {
+    this.error = 'Пароль должен содержать хотя бы 1 цифру'
+    return false
+  }
+
+  if (p !== cp) {
+    this.error = 'Пароли не совпадают'
+    return false
+  }
+
+  return true
 }
   }
 }
+
 </script>

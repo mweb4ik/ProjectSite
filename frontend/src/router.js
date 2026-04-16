@@ -1,49 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from './views/LoginPage.vue'
 import HomePage from './views/HomePage.vue'
-import VideocardPage from './views/VideocardPage.vue'
-import ProcessorPage from './views/ProcessorPage.vue'
-import MotherboardPage from './views/MotherboardPage.Vue'
-import CoolingPage from './views/CoolingPage.vue'
-import RamPage from './views/RamPage.vue'
-import StoragePage from './views/StoragePage.vue'
 import ErrorPage from './views/ErrorPage.vue'
 import ResetPasswordPage from './views/ResetPasswordPage.vue'
 import ForgotPasswordPage from './views/ForgotPasswordPage.vue'
 import ProfilePage from './views/ProfilePage.vue'
+import AdminPage from './views/AdminPage.vue'
+import ComponentsPage  from './views/ComponentsPage.vue'
 const routes = [
   { path: '/', component: LoginPage },
   { path: '/home', component: HomePage },
-
-  { path: '/videocard',
-    name: 'videocard',
-    component: VideocardPage 
-  },
-  { path: '/processor',
-    name: 'proccessor' ,
-    component: ProcessorPage 
-  },
-  { path: '/motherboard',
-    name: 'motherboard',
-    component: MotherboardPage 
-  },
-  { path: '/cooling',
-    name: 'cooling',
-    component: CoolingPage 
-  },
-  { path: '/ram',
-    name: 'ram',
-    component: RamPage },
-  { path: '/storage',
-    name: 'storage',
-    component: StoragePage 
-  },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: ErrorPage
   },
-  {  name: 'forgot',
+  {  name: 'forgot-password',
     path: '/forgot-password',
     component: ForgotPasswordPage
   },
@@ -54,9 +26,34 @@ const routes = [
   { name: 'profile',
     path: '/profile',
     component: ProfilePage
-  }
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminPage
+  },
+  { path: '/component/:type', component: ComponentsPage }
 ]
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes
 })
+
+router.beforeEach((to) => {
+  const user = JSON.parse(localStorage.getItem('user'))
+
+  if (!user && to.path !== '/') {
+    return '/'
+  }
+
+  if (to.path === '/profile' && user?.Role === 'guest') {
+    return '/home'
+  }
+
+  if (to.path === '/admin' && user?.Role !== 'admin') {
+    return '/home'
+  }
+
+  return true
+})
+export default router
