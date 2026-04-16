@@ -78,7 +78,14 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 }
-
+builder.Services.AddCors(options => {//для корректного подключения versel к бэку
+    options.AddPolicy("AllowVercel", policy => 
+        policy.WithOrigins("https://project-site.vercel.app", "http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials());
+});
+app.UseCors("AllowVercel");
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthentication();
