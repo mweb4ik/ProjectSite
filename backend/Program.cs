@@ -11,18 +11,41 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS для Vue frontend
+// CORS — 1 политика со всеми доменами
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins("http://localhost:5173", "http:/localhost:5124/")
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+    options.AddPolicy("AllowAll", policy =>
+        policy.WithOrigins(
+                "https://project-site.vercel.app",
+                "http://localhost:5173",
+                "http://localhost:5124"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
 });
 
-// EF Core с SQLite
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=app.db"));
+// Автовыбор БД: SQLite или PostgreSQL
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (connectionString?.Contains("Data Source=") == true || connectionString?.EndsWith(".db") == true)
+{
+    // SQLite для локальной разработки
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite(connectionString ?? "Data Source=app.db"));
+}
+else if (!string.IsNullOrEmpty(connectionString))
+{
+    // PostgreSQL для продакшена (Supabase/Render)
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
+else
+{
+    // Fallback на SQLite, если ничего не указано
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite("Data Source=app.db"));
+}
 
 // JWT аутентификация
 builder.Services.AddAuthentication(options =>
@@ -43,14 +66,19 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Политики авторизации по ролям
+// Политики авторизации
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
     options.AddPolicy("StandardOnly", policy => policy.RequireRole("standard"));
 });
 
+// Билд приложения
 var app = builder.Build();
+
+// Порт для Render
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Urls.Add($"http://0.0.0.0:{port}");
 
 if (app.Environment.IsDevelopment())
 {
@@ -58,7 +86,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Создание БД и посев admin-пользователя
+// Middleware 
+app.UseCors("AllowAll");  
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+//  Инициализация БД с админом
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -78,18 +113,5 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 }
-builder.Services.AddCors(options => {//для корректного подключения versel к бэку
-    options.AddPolicy("AllowVercel", policy => 
-        policy.WithOrigins("https://project-site.vercel.app", "http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials());
-});
-app.UseCors("AllowVercel");
-app.UseCors("AllowFrontend");
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
 
 app.Run();
