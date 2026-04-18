@@ -100,24 +100,38 @@ var appTask = app.RunAsync();
 //  Инициализация БД 
 async Task InitializeDatabaseAsync()
 {
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    await db.Database.MigrateAsync();
-
-    if (!await db.Users.AnyAsync(u => u.Email == "admin@example.com"))
+    if (app.Environment.IsDevelopment())
     {
-        var admin = new User
+        try
         {
-            Id = Guid.NewGuid().ToString(),
-            Email = "admin@example.com",
-            PasswordHash = PasswordService.HashPassword("admin12345"),
-            CreatedAt = DateTime.UtcNow,
-            Role = "admin"
-        };
-        db.Users.Add(admin);
-        await db.SaveChangesAsync();
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            db.Database.SetCommandTimeout(60);
+            await db.Database.MigrateAsync();
+
+            // Создание тестового админа 
+            if (!await db.Users.AnyAsync(u => u.Email == "admin@example.com"))
+            {
+                var admin = new User
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Username = "admin",  
+                    Email = "admin@example.com",
+                    PasswordHash = PasswordService.HashPassword("admin12345"),
+                    CreatedAt = DateTime.UtcNow,
+                    Role = "admin"
+                };
+                db.Users.Add(admin);
+                await db.SaveChangesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[DEV] DB init warning: {ex.Message}");
+        }
     }
+
 }
 await InitializeDatabaseAsync();
 
