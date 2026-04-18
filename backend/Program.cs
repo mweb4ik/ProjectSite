@@ -93,13 +93,16 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-//  Инициализация БД с админом
-using (var scope = app.Services.CreateScope())
+var appTask = app.RunAsync();
+//  Инициализация БД 
+async Task InitializeDatabaseAsync()
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
 
-    if (!db.Users.Any(u => u.Email == "admin@example.com"))
+    await db.Database.EnsureCreatedAsync();
+
+    if (!await db.Users.AnyAsync(u => u.Email == "admin@example.com"))
     {
         var admin = new User
         {
@@ -110,8 +113,9 @@ using (var scope = app.Services.CreateScope())
             Role = "admin"
         };
         db.Users.Add(admin);
-        db.SaveChanges();
+        await db.SaveChangesAsync();
     }
 }
+await InitializeDatabaseAsync();
 
-app.Run();
+await appTask;
