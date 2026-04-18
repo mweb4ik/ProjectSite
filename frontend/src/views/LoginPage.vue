@@ -84,8 +84,7 @@
 </template>
 
 <script>
-const API = 'http://localhost:5124/api/auth'
-
+import { api } from '@/api';
 export default {
   name: 'LoginPage',
   data() {
@@ -133,95 +132,78 @@ export default {
   this.$router.push({ name: 'forgot-password' }).catch(() => {})
 },
     async submitLogin() {
-      if (!this.form.Login || !this.form.Password) {
-        this.error = 'Заполните все поля'
-        return
-      }
-      this.loading = true
-      this.error = ''
+  if (!this.form.Login || !this.form.Password) {
+    this.error = 'Заполните все поля'
+    return
+  }
+  this.loading = true
+  this.error = ''
 
-      try {
-        const res = await fetch(`${API}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            Login: this.form.Login,
-            Password: this.form.Password
-          })
-        })
+  try {
+    const res = await api.post('/auth/login', {
+      Login: this.form.Login,
+      Password: this.form.Password
+    })
 
-        const data = await res.json()
-        if (!res.ok) {
-          this.error = data.message || 'Ошибка входа'
-          return
-        }
+    localStorage.setItem('token', res.data.token)
+    localStorage.setItem('user', JSON.stringify({
+      Username: res.data.Username,
+      Email: res.data.Email,
+      Role: res.data.Role
+    }))
 
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify({
-          Username: data.Username,
-          Email: data.Email,
-          Role: data.Role
-        }))
+    this.currentUser = {
+      Username: res.data.Username,
+      Email: res.data.Email,
+      Role: res.data.Role
+    }
 
-        this.currentUser = {
-          Username: data.Username,
-          Email: data.Email,
-          Role: data.Role
-        }
-
-        this.$router.push('/home')
-      } catch {
-        this.error = 'Сервер недоступен. Убедитесь, что backend запущен.'
-      } finally {
-        this.loading = false
-      }
-    },
+    this.$router.push('/home')
+  } catch (err) {
+    this.error = err.response?.data?.message || 'Ошибка входа'
+  } finally {
+    this.loading = false
+  }
+},
     async submitRegister() {
-     
-      this.loading = true
-      this.error = ''
-      if(!this.validatePassword())return
-      if (!this.form.Username || !this.form.Password || !this.form.Email) {
-        this.error = 'Заполните все поля'
-        return
-      }
-      try {
-        const res = await fetch(`${API}/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            Username: this.form.Username,
-            Email: this.form.Email,
-            Password: this.form.Password
-          })
-        })
+  this.loading = true
+  this.error = ''
+  
+  if (!this.validatePassword()) return
+  
+  if (!this.form.Username || !this.form.Password || !this.form.Email) {
+    this.error = 'Заполните все поля'
+    return
+  }
+  
+  try {
+    // ✅ Используем api вместо fetch
+    const res = await api.post('/auth/register', {
+      Username: this.form.Username,
+      Email: this.form.Email,
+      Password: this.form.Password
+    })
 
-        const data = await res.json()
-        if (!res.ok) {
-          this.error = data.message || 'Ошибка регистрации'
-          return
-        }
+    localStorage.setItem('token', res.data.token)
+    localStorage.setItem('user', JSON.stringify({
+      Username: res.data.Username,
+      Email: res.data.Email,
+      Role: res.data.Role
+    }))
 
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify({
-          Username: data.Username,
-          Email: data.Email,
-          Role: data.Role
-        }))
+    this.currentUser = {
+      Username: res.data.Username,
+      Email: res.data.Email,
+      Role: res.data.Role
+    }
 
-        this.currentUser = {
-          Username: data.Username,
-          Email: data.Email,
-          Role: data.Role
-        }
-
-        this.$router.push('/home')
-      } catch {
-        this.error = 'Сервер недоступен. Убедитесь, что backend запущен.'
-      } finally {
-        this.loading = false
-      }
-    },
+    this.$router.push('/home')
+  } catch (err) {
+    this.error = err.response?.data?.message || 'Ошибка регистрации'
+  } finally {
+    this.loading = false
+  }
+},
     enterAsGuest() {
       const guestUser = {
         Username: 'Guest',

@@ -1,6 +1,10 @@
-##Секреты
-.env
-.env.*
+# Фронтенд: игнори только локальные/секретные .env
+frontend/.env.local
+frontend/.env.*.local
+frontend/.env.production.local
+# Но разрешаем базовый .env с публичными настройками
+!frontend/.env
+!frontend/.env.production
 node_modules/
 ## Visual Studio
 .vs/
