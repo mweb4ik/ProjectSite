@@ -11,18 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        // 🔥 ВРЕМЕННО: разрешаем ЛЮБОЙ домен
-        policy.SetIsOriginAllowed(_ => true);
-        policy.AllowAnyHeader();
-        policy.AllowAnyMethod();
-        policy.AllowCredentials();
-    });
-});
-/*// CORS — 1 политика со всеми доменами
+// CORS — 1 политика со всеми доменами
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -35,7 +24,7 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
-});*/
+});
 
 // Автовыбор БД: SQLite или PostgreSQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
