@@ -40,9 +40,16 @@ if (connectionString?.Contains("Data Source=") == true || connectionString?.Ends
 else if (!string.IsNullOrEmpty(connectionString))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString)
-            .ConfigureWarnings(warnings =>
-                warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
+        options.UseNpgsql(connectionString, npgsqlOptions =>
+        {
+            npgsqlOptions.CommandTimeout(60); 
+            npgsqlOptions.EnableRetryOnFailure( 
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorCodesToAdd: null);
+        })
+        .ConfigureWarnings(warnings =>
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
 }
 else
 {
@@ -99,7 +106,63 @@ app.MapControllers();
 
 var appTask = app.RunAsync();
 //  Инициализация БД 
+
 async Task InitializeDatabaseAsync()
+{
+    Console.WriteLine("[DB] Starting initialization...");
+
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        int retries = 5;
+        while (retries > 0)
+        {
+            try
+            {
+                await db.Database.CanConnectAsync();
+                break;
+            }
+            catch (Exception ex)
+            {
+                retries--;
+                Console.WriteLine($"[DB] Connection failed, retries left: {retries}. Error: {ex.Message}");
+                if (retries == 0) throw;
+                await Task.Delay(2000); 
+            }
+        }
+
+        db.Database.SetCommandTimeout(60);
+        await db.Database.MigrateAsync();
+        Console.WriteLine("[DB] Migrations applied successfully");
+        // Создание тестового админа 
+        if (!await db.Users.AnyAsync(u => u.Email == "admin@example.com"))
+        {
+            var admin = new User
+            {
+                Id = Guid.NewGuid().ToString(),
+                Username = "admin",
+                Email = "admin@example.com",
+                PasswordHash = PasswordService.HashPassword("admin12345"),
+                CreatedAt = DateTime.UtcNow,
+                Role = "admin"
+            };
+            db.Users.Add(admin);
+            await db.SaveChangesAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[DB] ERROR: {ex.Message}");
+        throw; 
+    }
+}
+await InitializeDatabaseAsync();
+
+await appTask;
+
+
+/*async Task InitializeDatabaseAsync()
 {
     if (app.Environment.IsDevelopment())
     {
@@ -133,7 +196,4 @@ async Task InitializeDatabaseAsync()
         }
     }
 
-}
-await InitializeDatabaseAsync();
-
-await appTask;
+}*/
