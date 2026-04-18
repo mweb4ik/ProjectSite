@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "anxious": "^0.0.0-security",
     "vue": "^3.4.0",
     "vue-router": "^5.0.4"
   },
