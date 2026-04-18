@@ -69,48 +69,43 @@ export default {
       }
     }
   },
-  async mounted() {
-    const token = localStorage.getItem('token');
+async mounted() {
+  const token = localStorage.getItem('token');
 
-    if (!token) {
-      this.router.push('/');
-      return;
-    }
+  if (!token) {
+    this.router.push('/');
+    return;
+  }
 
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        this.user.email =  parsed.Email || 'Неизвестно';
-        this.user.role = parsed.Role || 'guest';
-      } catch {  }
-    }
-
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) {
     try {
-      const res = await fetch('http://localhost:5124/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const parsed = JSON.parse(savedUser);
+      this.user.email = parsed.Email || 'Неизвестно';
+      this.user.role = parsed.Role || 'guest';
+    } catch { }
+  }
 
-      if (!res.ok) throw new Error('Не удалось получить данные пользователя');
+  try {
+    const res = await api.get('/auth/me');  
 
-      const data = await res.json();
+    this.user.email = res.data.email || res.data.Email || 'Неизвестно';
+    this.user.role = res.data.role || res.data.Role || 'guest';
 
-      this.user.email = data.email || data.Email || 'Неизвестно';
-      this.user.role = data.role || data.Role || 'guest';
+    localStorage.setItem('user', JSON.stringify({
+      email: this.user.email,
+      role: this.user.role
+    }));
 
-      localStorage.setItem('user', JSON.stringify({
-        email: this.user.email,
-        role: this.user.role
-      }));
-
-    } catch (e) {
-      console.error(e);
-      this.user.email = 'Гость';
-      this.user.role = 'guest';
-    } finally {
-      this.loading = false;
-    }
-  },
+  } catch (e) {
+    console.error(e);
+    // Если токен протух — редирект на логин
+    localStorage.removeItem('token');
+    this.router.push('/');
+  } finally {
+    this.loading = false;
+  }
+},
   methods: {
     logout() {
       localStorage.removeItem('token')
