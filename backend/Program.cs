@@ -1,9 +1,10 @@
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using PcComponentsApi.Data;
 using PcComponentsApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +40,9 @@ else if (!string.IsNullOrEmpty(connectionString))
 {
     // PostgreSQL для продакшена (Supabase/Render)
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString));
+        options.UseNpgsql(connectionString)
+            .ConfigureWarnings(warnings =>
+                warnings.Ignore(RelationalEventId.PendingModelChangesWarning))); 
 }
 else
 {
