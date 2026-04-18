@@ -16,7 +16,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
         policy.WithOrigins(
-                "https://project-site.vercel.app",
+                "https://project-site-pearl.vercel.app",  
+                "https://project-site.vercel.app",         
                 "http://localhost:5173",
                 "http://localhost:5124"
             )
