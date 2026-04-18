@@ -21,8 +21,8 @@ builder.Services.AddCors(options =>
                 "https://project-site-pearl.vercel.app",  
                 "https://project-site.vercel.app",         
                 "http://localhost:5173",
-                "http://localhost:5124"
-
+                "http://localhost:5124",
+                "https://pc-components-app.vercel.app"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
