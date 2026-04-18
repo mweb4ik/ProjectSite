@@ -17,10 +17,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
         policy.WithOrigins(
+                "https://project-site-8xafhlcg5-mweb4iks-projects.vercel.app",
                 "https://project-site-pearl.vercel.app",  
                 "https://project-site.vercel.app",         
                 "http://localhost:5173",
                 "http://localhost:5124"
+
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
