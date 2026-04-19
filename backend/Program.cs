@@ -99,7 +99,7 @@ if (app.Environment.IsDevelopment())
 
 // Middleware 
 app.UseCors("AllowAll");
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
