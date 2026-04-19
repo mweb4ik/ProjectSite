@@ -51,16 +51,19 @@ import { components } from '@/data/components'
 import { getUserWithRetry } from '@/api';
 export default {
   name: 'HomePage',
+
   setup() {
     const router = useRouter()
     return { router }
   },
+
   data() {
     return {
       user: { email: '', role: '' },
       loading: true
     }
   },
+
   computed: {
     roleClass() {
       switch(this.user.role.toLowerCase()) {
@@ -69,57 +72,61 @@ export default {
         default: return 'guest-badge'
       }
     }
-  }, async mounted() {
-  const token = localStorage.getItem('token');
+  },
 
-  if (!token) {
-    this.router.push('/');
-    return;
-  }
+  async mounted() {
+    const token = localStorage.getItem('token');
 
-  const savedUser = localStorage.getItem('user');
-  if (savedUser) {
-    try {
-      const parsed = JSON.parse(savedUser);
-      this.user.email = parsed.Email || parsed.email || 'Неизвестно';
-      this.user.role = parsed.Role || parsed.role || 'guest';
-    } catch {}
-  }
-
-  try {
-    const res = await getUserWithRetry();
-
-    this.user.email = res.data.email || res.data.Email || 'Неизвестно';
-    this.user.role = res.data.role || res.data.Role || 'guest';
-
-    localStorage.setItem('user', JSON.stringify({
-      email: this.user.email,
-      role: this.user.role
-    }));
-
-  } catch (e) {
-    console.error(e);
-    if (e.response?.status === 401) {
-      localStorage.removeItem('token');
+    if (!token) {
       this.router.push('/');
+      return;
     }
-  } finally {
-    this.loading = false;
-  }
-},
+
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        this.user.email = parsed.Email || parsed.email || 'Неизвестно';
+        this.user.role = parsed.Role || parsed.role || 'guest';
+      } catch {}
+    }
+
+    try {
+      const res = await getUserWithRetry();
+
+      this.user.email = res.data.email || res.data.Email || 'Неизвестно';
+      this.user.role = res.data.role || res.data.Role || 'guest';
+
+      localStorage.setItem('user', JSON.stringify({
+        email: this.user.email,
+        role: this.user.role
+      }));
+
+    } catch (e) {
+      console.error(e);
+      if (e.response?.status === 401) {
+        localStorage.removeItem('token');
+        this.router.push('/');
+      }
+    } finally {
+      this.loading = false;
+    }
+  },
+
   methods: {
-    
     logout() {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       this.router.push('/')
     },
-goTo(page) {
-  if (components[page]) {
-    this.router.push('/component/' + page)
-  } else {
-    this.router.push('/' + page)
+
+    goTo(page) {
+      if (components[page]) {
+        this.router.push('/component/' + page)
+      } else {
+        this.router.push('/' + page)
+      }
+    },
   }
-},
 }
 </script>
