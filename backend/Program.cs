@@ -98,12 +98,12 @@ if (app.Environment.IsDevelopment())
 }
 
 // Middleware 
-app.UseCors("AllowAll");  
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
+app.MapGet("/health", () => Results.Ok("OK"));
 var appTask = app.RunAsync();
 //  Инициализация БД 
 
@@ -133,16 +133,17 @@ async Task InitializeDatabaseAsync()
         }
 
         db.Database.SetCommandTimeout(60);
-        await db.Database.MigrateAsync();
-        Console.WriteLine("[DB] Migrations applied successfully");
+
         var pending = await db.Database.GetPendingMigrationsAsync();
+
         if (pending.Any())
         {
             await db.Database.MigrateAsync();
+            Console.WriteLine("[DB] Migrations applied");
         }
         else
         {
-            Console.WriteLine("[DB] No pending migrations, skipping MigrateAsync");
+            Console.WriteLine("[DB] No migrations needed");
         }
         // Создание тестового админа 
         if (!await db.Users.AnyAsync(u => u.Email == "admin@example.com"))
@@ -165,6 +166,7 @@ async Task InitializeDatabaseAsync()
         Console.WriteLine($"[DB] ERROR: {ex.Message}");
         throw; 
     }
+  
 }
 await InitializeDatabaseAsync();
 

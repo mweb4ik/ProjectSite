@@ -48,6 +48,7 @@
 import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import { components } from '@/data/components'
+import { getUserWithRetry } from '@/api';
 export default {
   name: 'HomePage',
   setup() {
@@ -68,8 +69,7 @@ export default {
         default: return 'guest-badge'
       }
     }
-  },
-async mounted() {
+  }, async mounted() {
   const token = localStorage.getItem('token');
 
   if (!token) {
@@ -81,13 +81,13 @@ async mounted() {
   if (savedUser) {
     try {
       const parsed = JSON.parse(savedUser);
-      this.user.email = parsed.Email || 'Неизвестно';
-      this.user.role = parsed.Role || 'guest';
-    } catch { }
+      this.user.email = parsed.Email || parsed.email || 'Неизвестно';
+      this.user.role = parsed.Role || parsed.role || 'guest';
+    } catch {}
   }
 
   try {
-    const res = await api.get('/auth/me');  
+    const res = await getUserWithRetry();
 
     this.user.email = res.data.email || res.data.Email || 'Неизвестно';
     this.user.role = res.data.role || res.data.Role || 'guest';
@@ -99,14 +99,16 @@ async mounted() {
 
   } catch (e) {
     console.error(e);
-    // Если токен протух — редирект на логин
-    localStorage.removeItem('token');
-    this.router.push('/');
+    if (e.response?.status === 401) {
+      localStorage.removeItem('token');
+      this.router.push('/');
+    }
   } finally {
     this.loading = false;
   }
 },
   methods: {
+    
     logout() {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
@@ -118,7 +120,6 @@ goTo(page) {
   } else {
     this.router.push('/' + page)
   }
-}
-}
+},
 }
 </script>

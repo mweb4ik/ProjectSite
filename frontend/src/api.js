@@ -10,7 +10,6 @@ export const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true, // Если бэкенд использует куки
 });
 
 //  JWT-токен ко всем запросам 
@@ -21,5 +20,15 @@ api.interceptors.request.use((config) => {
     }
     return config;
 });
-
+export async function getUserWithRetry(retries = 3) {
+  try {
+    return await api.get('/auth/me');
+  } catch (e) {
+    if (retries > 0) {
+      await new Promise(r => setTimeout(r, 2000));
+      return getUserWithRetry(retries - 1);
+    }
+    throw e;
+  }
+}
 export default api;

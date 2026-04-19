@@ -177,7 +177,6 @@ export default {
   }
   
   try {
-    // ✅ Используем api вместо fetch
     const res = await api.post('/auth/register', {
       Username: this.form.Username,
       Email: this.form.Email,

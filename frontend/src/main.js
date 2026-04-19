@@ -10,3 +10,7 @@ import './assets/styles/ResetPasswordPage.css'
 import './assets/styles/ForgotPasswordPage.css'
 import './assets/styles/ComponentsPage.css'
 createApp(App).use(router).mount('#app')
+setInterval(() => {
+  fetch("https://projectsite-backend.onrender.com/health")
+    .catch(() => {});
+}, 5 * 60 * 1000);
