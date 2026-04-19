@@ -1,4 +1,4 @@
-<style scoped>
+
 .profile-page {
   display: flex;
   flex-direction: column;
@@ -61,4 +61,3 @@
   animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer { 0% { background-position: -500px 0; } 100% { background-position: 500px 0; } }
-</style>

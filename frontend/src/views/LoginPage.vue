@@ -131,11 +131,14 @@ export default {
   this.showRegister = false
   this.$router.push({ name: 'forgot-password' }).catch(() => {})
 },
-    async submitLogin() {
+   async submitLogin() {
+  if (this.loading) return; 
+
   if (!this.form.Login || !this.form.Password) {
     this.error = 'Заполните все поля'
     return
   }
+
   this.loading = true
   this.error = ''
 
@@ -145,18 +148,11 @@ export default {
       Password: this.form.Password
     })
 
-    localStorage.setItem('token', res.data.token)
     localStorage.setItem('user', JSON.stringify({
-      Username: res.data.Username,
-      Email: res.data.Email,
-      Role: res.data.Role
-    }))
-
-    this.currentUser = {
-      Username: res.data.Username,
-      Email: res.data.Email,
-      Role: res.data.Role
-    }
+  Username: res.data.Username,
+  Email: res.data.Email,
+  Role: res.data.Role
+}))
 
     this.$router.push('/home')
   } catch (err) {
@@ -168,7 +164,6 @@ export default {
     async submitRegister() {
   this.loading = true
   this.error = ''
-  
   if (!this.validatePassword()) return
   
   if (!this.form.Username || !this.form.Password || !this.form.Email) {

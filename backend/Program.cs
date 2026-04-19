@@ -14,17 +14,12 @@ builder.Services.AddSwaggerGen();
 // CORS — 1 политика со всеми доменами
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy.WithOrigins(
-                "https://pc-components-app.vercel.app",
-                "https://project-site-pearl.vercel.app",
-                "https://project-site.vercel.app",
-                "http://localhost:5173",
-                "http://localhost:5124"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            );
+   options.AddPolicy("AllowAll", policy =>
+    policy
+        .AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+);
 });
 
 // Автовыбор БД: SQLite или PostgreSQL
