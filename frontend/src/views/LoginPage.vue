@@ -147,7 +147,7 @@ export default {
       Login: this.form.Login,
       Password: this.form.Password
     })
-
+     localStorage.setItem('token', res.data.token)
     localStorage.setItem('user', JSON.stringify({
   Username: res.data.Username,
   Email: res.data.Email,
@@ -164,9 +164,13 @@ export default {
     async submitRegister() {
   this.loading = true
   this.error = ''
-  if (!this.validatePassword()) return
+  if (!this.validatePassword()) {
+    this.loading = false;
+    return;
+  }
   
   if (!this.form.Username || !this.form.Password || !this.form.Email) {
+    this.loading = false;
     this.error = 'Заполните все поля'
     return
   }

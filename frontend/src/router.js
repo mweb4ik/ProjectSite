@@ -40,12 +40,14 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user'))
 
-  if (!user && to.path !== '/') {
+  if (!token && to.path !== '/') {
     return '/'
   }
 
+  // роли
   if (to.path === '/profile' && user?.Role === 'guest') {
     return '/home'
   }
@@ -56,4 +58,11 @@ router.beforeEach((to) => {
 
   return true
 })
+function isAdmin(user) {
+  return user?.Role === 'admin'
+}
+
+function isUser(user) {
+  return user?.Role === 'user'
+}
 export default router

@@ -13,7 +13,6 @@
 
       <div v-else class="auth-card">
         <p>Введите новый пароль для вашего аккаунта</p>
-        <input v-model="form.Token" placeholder="Токен из письма" class="input-field" />
         <input v-model="form.NewPassword" placeholder="Новый пароль" class="input-field" />
         <button class="btn btn-primary full" @click="submitReset" :disabled="loading">
           {{ loading ? 'Отправка...' : 'Сбросить пароль' }}
@@ -25,7 +24,7 @@
 </template>
 
 <script>
-const API = 'http://localhost:5124/api/auth'
+const API = 'https://projectsite-backend.onrender.com'
 
 export default {
   name: 'ResetPasswordPage',
@@ -57,24 +56,23 @@ export default {
       this.error = ''
 
       try {
-        const res = await fetch(`${API}/reset-password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            Token: this.form.Token,
-            NewPassword: this.form.NewPassword
-          })
-        })
-
+        const res = await api.post('/auth/reset-password', {
+  Token: this.form.Token,
+  NewPassword: this.form.NewPassword
+})
+       if (!this.form.Token) {
+    this.error = 'Неверная ссылка'
+    return
+    }
         if (!res.ok) {
           this.error = 'Ошибка сброса'
           return
         }
         const data = await res.json()
         alert('Пароль успешно обновлён')
-        this.$router.push('/home')
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(data))
+        this.$router.push('/home')
       } catch (err) {
         console.error(err)
         this.error = 'Сервер недоступен'

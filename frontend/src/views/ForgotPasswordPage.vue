@@ -24,7 +24,7 @@
 </template>
 
 <script>
-const API = 'http://localhost:5124/api/auth'
+const API = 'https://projectsite-backend.onrender.com'
 
 export default {
   name: 'ForgotPasswordPage',
@@ -46,11 +46,9 @@ export default {
       this.error = ''
 
       try {
-        const res = await fetch(`${API}/forgot-password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ Email:this.Email  })
-        })
+        const res = await api.post('/auth/forgot-password', {
+        Email: this.Email
+      })
 
         if (!res.ok) {
           this.error = 'Ошибка отправки'

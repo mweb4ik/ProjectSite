@@ -24,7 +24,7 @@
 </template>
 
 <script>
-const API = 'http://localhost:5124/api/auth'
+const API = 'https://projectsite-backend.onrender.com'
 import AppHeader from '@/components/AppHeader.vue'
 export default {
   name: 'ProfilePage',
@@ -44,20 +44,20 @@ export default {
 
     const savedUser = localStorage.getItem('user')
     if (savedUser) {
-      try {
-        this.user = JSON.parse(savedUser)
-      } catch {}
-    }
+  this.user = JSON.parse(savedUser)
+  this.loading = false
+  return
+  }
 
     try {
-      const res = await fetch(`${API}/me`, {
+      const res = await api(`${API}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       if (!res.ok) throw new Error('Не удалось получить данные пользователя')
       const data = await res.json()
-      this.user.Username = data.Username || data.username
-      this.user.Email = data.Email || data.email
-      this.user.Role = data.Role || data.role
+      this.user.Username = data.Username
+      this.user.Email = data.Email 
+      this.user.Role = data.Role 
       localStorage.setItem('user', JSON.stringify(this.user))
     } catch (err) {
       console.error(err)

@@ -17,7 +17,7 @@
       <div v-else>
         <img src="/images/pc.png" alt="Компьютер" class="hero-img" />
         <p class="welcome-text">
-          Добро пожаловать, <span class="highlight">{{ user.email }}</span>!
+          Добро пожаловать, <span class="highlight">{{ user.Username }}</span>!
         </p>
         <p class="subtitle">Выберите компонент для изучения</p>
 
@@ -59,16 +59,16 @@ export default {
 
   data() {
     return {
-      user: { email: '', role: '' },
+      user: { Email: '', Role: '',Username:'' },
       loading: true
     }
   },
 
   computed: {
     roleClass() {
-      switch(this.user.role.toLowerCase()) {
+      switch(this.user.Role.toLowerCase()) {
         case 'admin': return 'admin-badge'
-        case 'user': return 'user-badge'
+        case 'standard': return 'user-badge'
         default: return 'guest-badge'
       }
     }
@@ -86,21 +86,26 @@ export default {
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
-        this.user.email = parsed.Email || parsed.email || 'Неизвестно';
-        this.user.role = parsed.Role || parsed.role || 'guest';
+        this.user.Email = parsed.Email  || 'Неизвестно';
+        this.user.Role = parsed.Role  || 'guest';
+        this.user.Username = parsed.Username  || 'неизвестное имя';
+        this.user = JSON.parse(savedUser)
+        this.loading = false
+  return
       } catch {}
     }
 
     try {
       const res = await getUserWithRetry();
 
-      this.user.email = res.data.email || res.data.Email || 'Неизвестно';
-      this.user.role = res.data.role || res.data.Role || 'guest';
-
+      this.user.Email = res.data.Email || 'Неизвестно';
+      this.user.Role =  res.data.Role || 'guest';
+      this.user.Username = parsed.Username  || 'неизвестное имя';
       localStorage.setItem('user', JSON.stringify({
-        email: this.user.email,
-        role: this.user.role
-      }));
+      Username: this.username.user.Username, 
+      Email: this.user.email,
+      Role: this.user.role
+    }));
 
     } catch (e) {
       console.error(e);

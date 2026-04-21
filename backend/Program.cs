@@ -85,13 +85,11 @@ var app = builder.Build();
 // Порт для Render
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 app.Urls.Add($"http://0.0.0.0:{port}");
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 // Middleware 
 app.UseCors("AllowAll");
 //app.UseHttpsRedirection();
@@ -110,7 +108,7 @@ async Task InitializeDatabaseAsync()
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        int retries = 5;
+        int retries = 3;
         while (retries > 0)
         {
             try
@@ -123,7 +121,7 @@ async Task InitializeDatabaseAsync()
                 retries--;
                 Console.WriteLine($"[DB] Connection failed, retries left: {retries}. Error: {ex.Message}");
                 if (retries == 0) throw;
-                await Task.Delay(2000); 
+                await Task.Delay(1000); 
             }
         }
 

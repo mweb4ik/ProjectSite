@@ -1,6 +1,5 @@
 
 import axios from 'axios';
-
 //  URL из .env или оставляем localhost для локальной разработки
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 

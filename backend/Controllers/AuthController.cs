@@ -107,7 +107,7 @@ public class AuthController : ControllerBase
             message.From.Add(new MailboxAddress("PcArchitekture", smtpEmail));
             message.To.Add(new MailboxAddress(user.Username, user.Email));
             message.Subject = "Сброс пароля";
-            message.Body = new TextPart("plain") { Text = $"http://localhost:5173/reset-password?token={user.ResetToken}" };
+            message.Body = new TextPart("plain") {Text = $"https://pc-components-app.vercel.app/reset-password?token={user.ResetToken}"};
 
             using var client = new SmtpClient();
             await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
@@ -168,17 +168,22 @@ public class AuthController : ControllerBase
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-   [HttpGet("me")]
+[HttpGet("me")]
 [Authorize]
 public async Task<IActionResult> Me()
 {
-    var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    if (!Guid.TryParse(userIdStr, out Guid userId))
-        return Unauthorized();
-    var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId.ToString());
-    if (user == null) return NotFound();
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-    return Ok(new {
+    if (string.IsNullOrEmpty(userId))
+        return Unauthorized();
+
+    var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+    if (user == null)
+        return NotFound();
+
+    return Ok(new
+    {
         Username = user.Username,
         Email = user.Email,
         Role = user.Role
