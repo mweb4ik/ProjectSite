@@ -189,4 +189,48 @@ public async Task<IActionResult> Me()
         Role = user.Role
     });
 }
+[HttpPut("update-profile")]
+[Authorize]
+public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto model)
+{
+    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Unauthorized(new { message = "Неверный токен" });
+    }
+
+    var user = await _context.Users.FindAsync(userId.ToString());
+    if (user == null)
+    {
+        return NotFound(new { message = "Пользователь не найден" });
+    }
+
+    if (!string.IsNullOrWhiteSpace(model.Username))
+    {
+        var exists = await _context.Users.AnyAsync(u => u.Username == model.Username && u.Id != user.Id);
+        if (exists)
+        {
+            return Conflict(new { message = "Такой ник уже занят" });
+        }
+        user.Username = model.Username;
+    }
+
+    if (!string.IsNullOrWhiteSpace(model.NewPassword))
+    {
+        if (model.NewPassword.Length < 6)
+        {
+            return BadRequest(new { message = "Пароль должен быть минимум 6 символов" });
+        }
+        user.PasswordHash = PasswordService.HashPassword(model.NewPassword);
+    }
+
+    await _context.SaveChangesAsync();
+
+    return Ok(new 
+    { 
+        message = "Профиль обновлен",
+        username = user.Username,
+        role = user.Role 
+    });
+}
 }
