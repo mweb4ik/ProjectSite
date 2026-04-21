@@ -23,34 +23,72 @@ builder.Services.AddCors(options =>
 });
 
 // Автовыбор БД: SQLite или PostgreSQL
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                       ?? builder.Configuration["DATABASE_URL"];
 
-if (connectionString?.Contains("Data Source=") == true || connectionString?.EndsWith(".db") == true)
+if (string.IsNullOrEmpty(connectionString))
 {
-    // SQLite для локальной разработки
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlite(connectionString ?? "Data Source=app.db"));
+    // Fallback на SQLite если нет переменной окружения
+    connectionString = "Data Source=app.db";
 }
 
-else if (!string.IsNullOrEmpty(connectionString))
+// Определение типа БД
+bool isSqlite = connectionString.Contains("Data Source=") && !connectionString.Contains("Host=");
+
+// Если строка содержит "Host=", это точно не SQLite, даже если там нет префикса postgresql://
+if (connectionString.Contains("Host=") || connectionString.Contains("Server="))
+{
+    isSqlite = false;
+}
+
+if (isSqlite)
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString, npgsqlOptions =>
-        {
-            npgsqlOptions.CommandTimeout(60); 
-            npgsqlOptions.EnableRetryOnFailure( 
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorCodesToAdd: null);
-        })
-        .ConfigureWarnings(warnings =>
-            warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
+        options.UseSqlite(connectionString));
+    Console.WriteLine("[DB] Using SQLite database.");
 }
 else
 {
-    // Fallback на SQLite, если ничего не указано
+    // Для PostgreSQL
+    string finalConnectionString = connectionString;
+
+  
+    try 
+    {
+        // распарсить через билдер для нормализации и добавления дефолтных настроек
+        var npgsqlBuilder = new NpgsqlConnectionStringBuilder(connectionString);
+        
+        //  доверие к сертификату 
+        npgsqlBuilder.TrustServerCertificate = true;
+        
+        if (!npgsqlBuilder.ContainsKey("GssEncryptionMode"))
+        {
+             npgsqlBuilder.GssEncryptionMode = Npgsql.GssEncryptionMode.Disable;
+        }
+
+        finalConnectionString = npgsqlBuilder.ConnectionString;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[DB] Warning: Could not parse connection string with NpgsqlConnectionStringBuilder: {ex.Message}");
+     
+        if (!connectionString.Contains("Trust Server Certificate"))
+        {
+            finalConnectionString += ";Trust Server Certificate=true;GssEncryptionMode=Disable";
+        }
+    }
+
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlite("Data Source=app.db"));
+        options.UseNpgsql(finalConnectionString, npgsqlOptions =>
+        {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorCodesToAdd: null);
+        }));
+    
+    Console.WriteLine("[DB] Using PostgreSQL database.");
+    Console.WriteLine($"[DB] Connection Host: {new NpgsqlConnectionStringBuilder(finalConnectionString).Host}");
 }
 
 // JWT аутентификация
