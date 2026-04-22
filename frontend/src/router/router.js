@@ -1,14 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginPage from '@/auth/LoginPage.vue'
-import HomePage from '@/views/HomePage.vue'
-import ErrorPage from '@/views/ErrorPage.vue'
-import ResetPasswordPage from '@/auth/ResetPasswordPage.vue'
-import ForgotPasswordPage from '@/auth/ForgotPasswordPage.vue'
-import ProfilePage from '@/views/ProfilePage.vue'
-import AdminPage from '@/views/AdminPage.vue'
-import ComponentsPage  from '@/components/ComponentsPage.vue'
-import BiosPage  from '@/components/BiosPage.vue'
-import ComponentsDetailsPage from '@/components/ComponentsDetailsPage.vue'  
+import LoginPage from './auth/LoginPage.vue'
+import HomePage from './views/HomePage.vue'
+import ErrorPage from './views/ErrorPage.vue'
+import ResetPasswordPage from './auth/ResetPasswordPage.vue'
+import ForgotPasswordPage from './auth/ForgotPasswordPage.vue'
+import ProfilePage from './views/ProfilePage.vue'
+import AdminPage from './views/AdminPage.vue'
+import ComponentsPage  from './components/ComponentsPage.vue'
+import BiosPage  from './components/BiosPage.vue'
+import ComponentsDetailsPage from './components/ComponentsDetailsPage'  
 const routes = [
   { path: '/', component: LoginPage },
   { path: '/home', component: HomePage },
@@ -32,7 +32,7 @@ const routes = [
   {
     path: '/admin',
     name: 'admin',
-    component: AdminPageac
+    component: AdminPage
   },
   {  name: 'bios',
     path: '/bios',
