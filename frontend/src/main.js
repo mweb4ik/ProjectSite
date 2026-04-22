@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import router from './router/router'
-import  api  from '@/api'
+import api from './api.js'
+import router from './router/router.js'
 
 import '@/assets/styles/base/main.css'
 
