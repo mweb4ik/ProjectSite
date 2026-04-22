@@ -8,7 +8,7 @@ import ProfilePage from '@/views/ProfilePage.vue'
 import AdminPage from '@/views/AdminPage.vue'
 import ComponentsPage  from '@/components/ComponentsPage.vue'
 import BiosPage  from '@/components/BiosPage.vue'
-import ComponentsDetailsPage from '@/components/ComponentsDetailsPage'  
+import ComponentsDetailsPage from '@/components/ComponentsDetailsPage.vue'  
 const routes = [
   { path: '/', component: LoginPage },
   { path: '/home', component: HomePage },
