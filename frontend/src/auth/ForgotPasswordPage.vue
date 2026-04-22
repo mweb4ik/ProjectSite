@@ -3,9 +3,10 @@
     <header class="header">
       <h1 class="highlight">Восстановление пароля</h1>
     </header>
-
+    
     <main class="content">
       <div v-if="loading" class="skeleton-wrapper">
+        <div class="auth-page"></div>
         <div class="skeleton-text" style="width: 70%; height: 25px;"></div>
         <div class="skeleton-text" style="width: 60%; height: 25px;"></div>
         <div class="skeleton-btn" style="height: 45px; margin-top: 20px;"></div>

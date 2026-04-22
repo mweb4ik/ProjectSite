@@ -32,7 +32,7 @@ const routes = [
   {
     path: '/admin',
     name: 'admin',
-    component: AdminPage
+    component: AdminPageac
   },
   {  name: 'bios',
     path: '/bios',

@@ -2,14 +2,19 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router/router'
 import  api  from '@/api'
-import './assets/styles/buttons.css'
-import './assets/styles/main.css'
-import './assets/styles/home.css'
-import './assets/styles/ErrorPage.css'
-import './assets/styles/ProfilePage.css'
-import './assets/styles/ResetPasswordPage.css'
-import './assets/styles/ForgotPasswordPage.css'
-import './assets/styles/ComponentsPage.css'
+
+import '@/assets/styles/base/main.css'
+
+import '@/assets/styles/components/buttons.css'
+import '@/assets/styles/components/forms.css'
+import '@/assets/styles/components/header.css'
+import '@/assets/styles/components/skeleton.css'
+
+import '@/assets/styles/pages/home.css'
+import '@/assets/styles/pages/profile.css'
+import '@/assets/styles/pages/error.css'
+import '@/assets/styles/pages/auth.css'
+import '@/assets/styles/pages/components.css'
 createApp(App).use(router).mount('#app')
 setInterval(() => {
   fetch("https://projectsite-backend.onrender.com/health")

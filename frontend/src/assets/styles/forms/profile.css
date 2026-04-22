@@ -47,17 +47,4 @@
 }
 .btn-logout:hover { filter: brightness(1.2); }
 
-.skeleton-wrapper {
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-.skeleton-text {
-  height: 20px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #1e1e1e 25%, #2a2a2a 50%, #1e1e1e 75%);
-  background-size: 1000px 100%;
-  animation: shimmer 1.5s infinite;
-}
-@keyframes shimmer { 0% { background-position: -500px 0; } 100% { background-position: 500px 0; } }
+

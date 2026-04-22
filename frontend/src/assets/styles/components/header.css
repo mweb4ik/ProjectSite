@@ -1,0 +1,27 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 2px solid rgba(0, 163, 255, 0.2);
+  margin-bottom: 40px;
+}
+
+.user-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.user-email { color: #aaa; }
+
+.role-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+.admin-badge { background: #dc3545; }
+.user-badge { background: #17a2b8; }
+.guest-badge { background: #6c757d; }
