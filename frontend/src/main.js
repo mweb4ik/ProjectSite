@@ -15,6 +15,8 @@ import '@/assets/styles/pages/profile.css'
 import '@/assets/styles/pages/error.css'
 import '@/assets/styles/pages/auth.css'
 import '@/assets/styles/pages/components.css'
+import '@/assets/styles/pages/ForgotPassword.css'
+import '@/assets/styles/pages/ResetPassword.css'
 createApp(App).use(router).mount('#app')
 setInterval(() => {
   fetch("https://projectsite-backend.onrender.com/health")
