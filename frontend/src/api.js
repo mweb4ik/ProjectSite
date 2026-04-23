@@ -40,13 +40,18 @@ export async function getUserWithRetry(retries = 3) {
       throw e;
     }
 
-    // если не авторизован — не ретраим, а пробуем очистить токен
-    if (e.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/'; // Принудительный редирект на логин
-      throw e;
-    }
+  // если не авторизован 
+if (e.response.status === 401) {
+  console.error(' [API] 401 Unauthorized! Проверь токен и настройки JWT на сервере.');
+  console.error('Ответ сервера:', e.response.data);
+  
+  // Временно закомментируй удаление токена и редирект
+  // localStorage.removeItem('token');
+  // localStorage.removeItem('user');
+  // window.location.href = '/'; 
+  
+  throw e;
+}
 
     // только 5xx ретраим
     if (e.response.status >= 500 && retries > 0) {
