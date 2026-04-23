@@ -118,10 +118,11 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key)
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        
+        ClockSkew = TimeSpan.Zero 
     };
 });
-
 // Политики авторизации
 builder.Services.AddAuthorization(options =>
 {
