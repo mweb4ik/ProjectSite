@@ -1,5 +1,5 @@
-
 import axios from 'axios';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const api = axios.create({
@@ -7,17 +7,26 @@ export const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-     timeout: 10000 
+    timeout: 10000 
 });
 
-//  JWT-токен ко всем запросам 
+// JWT-токен ко всем запросам 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
-    if (token) {
+    
+    if (token && typeof token === 'string' && token.trim() !== '') {
+        // Явно устанавливаем заголовок, перезаписывая значение, если оно было
         config.headers.Authorization = `Bearer ${token}`;
+
+        console.log('[API] Token found, setting Authorization header');
+    } else {
+        delete config.headers.Authorization;
+         console.warn('[API] No valid token found, Authorization header removed');
     }
+    
     return config;
 });
+
 export async function getUserWithRetry(retries = 3) {
   try {
     return await api.get('/auth/me');
@@ -31,8 +40,11 @@ export async function getUserWithRetry(retries = 3) {
       throw e;
     }
 
-    // если не авторизован — не ретраим
+    // если не авторизован — не ретраим, а пробуем очистить токен
     if (e.response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/'; // Принудительный редирект на логин
       throw e;
     }
 
@@ -45,4 +57,5 @@ export async function getUserWithRetry(retries = 3) {
     throw e;
   }
 }
+
 export default api;
