@@ -156,7 +156,7 @@ export default {
     },
     
     // Логика входа
-    async submitLogin() {
+    sync submitLogin() {
       if (this.loading) return;
 
       if (!this.form.Login || !this.form.Password) {
@@ -173,28 +173,31 @@ export default {
           Password: this.form.Password
         });
 
-        //  явное приведение токена к строке и проверяем его наличие
-        const token = String(res.data.Token);
+        console.log('=== ПОЛНЫЙ ОТВЕТ СЕРВЕРА ===');
+        console.log(res.data); 
+        console.log('Поле Token:', res.data.Token);
+        console.log('Поле token:', res.data.token);
+        console.log('===========================');
+   
+        const token = res.data.Token || res.data.token || res.data.accessToken;
         
         if (!token || token === 'undefined' || token === 'null') {
-          throw new Error('Сервер вернул некорректный токен');
+          throw new Error('Сервер вернул пустой токен. См. консоль (F12).');
         }
 
-        // Сохраняем данные
-        localStorage.setItem('token', token);
+        localStorage.setItem('token', String(token));
         localStorage.setItem('user', JSON.stringify({
-          Username: res.data.Username,
-          Email: res.data.Email,
-          Role: res.data.Role
+          Username: res.data.Username || res.data.username,
+          Email: res.data.Email || res.data.email,
+          Role: res.data.Role || res.data.role
         }));
 
         console.log('[LOGIN] Success, redirecting...');
-
         this.$router.push('/home');
         
       } catch (err) {
         console.error('[LOGIN] Error:', err);
-        this.error = err.response?.data?.message || 'Ошибка входа. Проверьте логин/пароль.';
+        this.error = err.response?.data?.message || err.message || 'Ошибка входа';
       } finally {
         this.loading = false;
       }
