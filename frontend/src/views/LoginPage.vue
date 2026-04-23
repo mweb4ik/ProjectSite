@@ -156,7 +156,7 @@ export default {
     },
     
     // Логика входа
-    sync submitLogin() {
+    async submitLogin() {
       if (this.loading) return;
 
       if (!this.form.Login || !this.form.Password) {
