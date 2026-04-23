@@ -75,59 +75,56 @@ export default {
   },
 
   async mounted() {
-    //  Явно читаем токен как строку
-    const token = localStorage.getItem('token');
-    
-    console.log('[HomePage] Raw token from LS:', token); // Для отладки
+  const token = localStorage.getItem('token');
+  
+  // Если токена нет вообще 
+  if (!token || token === 'undefined' || token === 'null') {
+    console.warn('[HOME] No token, redirecting to login');
+    this.router.push('/');
+    return;
+  }
 
-    if (!token || token === 'undefined' || token === 'null') {
-      console.warn('[HomePage] No valid token found, redirecting to login');
-      this.router.push('/');
-      return;
-    }
+  console.log('[HOME] Token found, length:', token.length);
 
-    // загрузить пользователя из localStorage
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        this.user.Email = parsed.Email || 'Неизвестно';
-        this.user.Role = parsed.Role || 'guest';
-        this.user.Username = parsed.Username || 'неизвестное имя';
-        // Не ставим loading = false здесь, ждем ответа сервера!
-      } catch (e) {
-        console.error('Error parsing user', e);
-      }
-    }
-
-    //запрос к серверу
+  // Пытаемся показать сохраненные данные сразу, чтобы экран не был пустым
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) {
     try {
-      const res = await getUserWithRetry();
-      
-      this.user.Email = res.data.Email || 'Неизвестно';
-      this.user.Role = res.data.Role || 'guest';
-      this.user.Username = res.data.Username || 'неизвестное имя';
-      
-      localStorage.setItem('user', JSON.stringify({
-        Username: this.user.Username, 
-        Email: this.user.Email,
-        Role: this.user.Role
-      }));
-      
+      const parsed = JSON.parse(savedUser);
+      this.user = {
+        Email: parsed.Email || '',
+        Role: parsed.Role || '',
+        Username: parsed.Username || 'Пользователь'
+      };
     } catch (e) {
-      console.error('Auth check failed', e);
-      if (e.response && e.response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        this.router.push('/');
-      } else {
-        // Если ошибка сети (500, timeout), показываем данные из LS, но не выкидываем сразу
-        console.warn('Server error, keeping local data for now');
-      }
-    } finally {
-      this.loading = false;
+      console.error('Error parsing user', e);
     }
-  },
+  }
+
+  // Пробуем проверить токен на сервере
+  try {
+    const res = await getUserWithRetry();
+    
+    // Если успех - обновляем свежие данные
+    this.user = {
+      Email: res.data.Email || this.user.Email,
+      Role: res.data.Role || this.user.Role,
+      Username: res.data.Username || this.user.Username
+    };
+    
+    localStorage.setItem('user', JSON.stringify(this.user));
+    console.log('[HOME] Auth successful');
+    
+  } catch (e) {
+    console.error('[HOME] Auth check failed:', e.response?.status, e.response?.data);
+    
+    if (e.response?.status === 401) {
+      console.warn('[HOME] Token invalid, but keeping user on page for debugging. Please clear LS manually.');
+    }
+  } finally {
+    this.loading = false;
+  }
+},
 
   methods: {
     logout() {
