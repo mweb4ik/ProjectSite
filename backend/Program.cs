@@ -141,63 +141,73 @@ var appTask = app.RunAsync();
 async Task InitializeDatabaseAsync()
 {
     Console.WriteLine("[DB] Starting initialization...");
+    
+    int maxRetries = 5; 
+    int retryDelayMs = 2000; 
 
-    try
+    for (int i = 0; i < maxRetries; i++)
     {
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        int retries = 3;
-        while (retries > 0)
+        try
         {
-            try
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            db.Database.SetCommandTimeout(120);
+
+            Console.WriteLine($"[DB] Attempting to connect and migrate (Attempt {i + 1}/{maxRetries})...");
+            
+
+            bool canConnect = await db.Database.CanConnectAsync();
+            if (!canConnect) throw new Exception("Cannot connect to database");
+
+           
+            var pending = await db.Database.GetPendingMigrationsAsync();
+
+            if (pending.Any())
             {
-                await db.Database.CanConnectAsync();
-                break;
+                Console.WriteLine($"[DB] Applying {pending.Count()} migrations...");
+                await db.Database.MigrateAsync();
+                Console.WriteLine("[DB] Migrations applied successfully");
             }
-            catch (Exception ex)
+            else
             {
-                retries--;
-                Console.WriteLine($"[DB] Connection failed, retries left: {retries}. Error: {ex.Message}");
-                if (retries == 0) throw;
-                await Task.Delay(1000); 
+                Console.WriteLine("[DB] No migrations needed");
             }
-        }
 
-        db.Database.SetCommandTimeout(60);
-
-        var pending = await db.Database.GetPendingMigrationsAsync();
-
-        if (pending.Any())
-        {
-            await db.Database.MigrateAsync();
-            Console.WriteLine("[DB] Migrations applied");
-        }
-        else
-        {
-            Console.WriteLine("[DB] No migrations needed");
-        }
-        // Создание тестового админа 
-        if (!await db.Users.AnyAsync(u => u.Email == "admin@example.com"))
-        {
-            var admin = new User
+            // Создание тестового админа
+            if (!await db.Users.AnyAsync(u => u.Email == "admin@example.com"))
             {
-                Id = Guid.NewGuid().ToString(),
-                Username = "admin",
-                Email = "admin@example.com",
-                PasswordHash = PasswordService.HashPassword("admin12345"),
-                CreatedAt = DateTime.UtcNow,
-                Role = "admin"
-            };
-            db.Users.Add(admin);
-            await db.SaveChangesAsync();
+                var admin = new User
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Username = "admin",
+                    Email = "admin@example.com",
+                    PasswordHash = PasswordService.HashPassword("admin12345"),
+                    CreatedAt = DateTime.UtcNow,
+                    Role = "admin"
+                };
+                db.Users.Add(admin);
+                await db.SaveChangesAsync();
+                Console.WriteLine("[DB] Admin user created");
+            }
+
+            Console.WriteLine("[DB] Initialization completed successfully.");
+            return; // Выход из функции, если все успешно
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[DB] ERROR on attempt {i + 1}: {ex.Message}");
+            if (i == maxRetries - 1)
+            {
+                Console.WriteLine("[DB] Max retries reached. Crashing application.");
+                throw;
+            }
+            
+            Console.WriteLine($"[DB] Retrying in {retryDelayMs}ms...");
+            await Task.Delay(retryDelayMs);
         }
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[DB] ERROR: {ex.Message}");
-        throw; 
-    }
-  
 }
 await InitializeDatabaseAsync();
 
