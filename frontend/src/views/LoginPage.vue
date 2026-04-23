@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <!-- Главная с кнопками -->
+    <!-- Главная страница с кнопками входа -->
     <div v-if="!showLogin && !showRegister" class="home">
       <h1>Познай Внутреннее устройство компьютера</h1>
       <img src="/images/pc.png" alt="Компьютер" />
@@ -10,6 +10,7 @@
       </div>
     </div>
 
+    <!-- Отображение данных текущего пользователя (если уже вошел) -->
     <div v-if="currentUser" class="user-info">
       <p>Пользователь: {{ currentUser.Username }}!</p>
       <p>Роль: {{ currentUser.Role }}</p>
@@ -22,11 +23,26 @@
 
       <div class="form-group">
         <label>Login (Email или Username)</label>
-        <input v-model="form.Login" type="text" placeholder="email или username" @keyup.enter="submitLogin" />
+        <!-- Добавлен id и name для корректной работы браузеров -->
+        <input 
+          id="login-input" 
+          name="login"
+          v-model="form.Login" 
+          type="text" 
+          placeholder="email или username" 
+          @keyup.enter="submitLogin" 
+        />
       </div>
       <div class="form-group">
         <label>Пароль</label>
-        <input v-model="form.Password" type="password" placeholder="••••••••" @keyup.enter="submitLogin" />
+        <input 
+          id="password-input" 
+          name="password"
+          v-model="form.Password" 
+          type="password" 
+          placeholder="••••••••" 
+          @keyup.enter="submitLogin" 
+        />
       </div>
 
       <button class="btn btn-primary full" :disabled="loading" @click="submitLogin">
@@ -39,7 +55,6 @@
       </p>
 
       <button class="btn btn-ghost" @click="closeAuth">← Назад</button>
-
       <button class="btn-ghost link" @click="goToForgot">Забыли пароль?</button>
     </div>
 
@@ -76,7 +91,7 @@
       <button class="btn btn-ghost" @click="closeAuth">← Назад</button>
     </div>
 
-    <!-- Гость -->
+    <!-- Кнопка входа как гость -->
     <button class="btn btn-ghost" @click="enterAsGuest">
       Войти как гость
     </button>
@@ -85,6 +100,7 @@
 
 <script>
 import { api } from '@/api';
+
 export default {
   name: 'LoginPage',
   data() {
@@ -98,147 +114,174 @@ export default {
         Login: '',
         Email: '',
         Password: '',
-        ConfirmPassword:''
+        ConfirmPassword: ''
       },
       currentUser: null
     }
   },
   mounted() {
-    const token = localStorage.getItem('token')
-    const user = localStorage.getItem('user')
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
 
-    if (token && user) {
-      this.currentUser = JSON.parse(user)
-      this.$router.push('/home')
+    if (token && userStr) {
+      try {
+        this.currentUser = JSON.parse(userStr);
+
+        if (this.$route.path === '/') {
+           this.$router.push('/home').catch(() => {});
+        }
+      } catch (e) {
+        console.error('Ошибка парсинга пользователя', e);
+        localStorage.clear();
+      }
     }
-    
   },
   methods: {
     switchTo(page) {
-      this.error = ''
-      this.form = { Username: '', Login: '', Email: '', Password: '' }
-      this.showLogin = page === 'login'
-      this.showRegister = page === 'register'
+      this.error = '';
+      this.form = { Username: '', Login: '', Email: '', Password: '', ConfirmPassword: '' };
+      this.showLogin = page === 'login';
+      this.showRegister = page === 'register';
     },
     closeAuth() {
-      this.error = ''
-      this.form = { Username: '', Login: '', Email: '', Password: '' }
-      this.showLogin = false
-      this.showRegister = false
+      this.error = '';
+      this.form = { Username: '', Login: '', Email: '', Password: '', ConfirmPassword: '' };
+      this.showLogin = false;
+      this.showRegister = false;
     },
     goToForgot() {
-  this.showLogin = false
-  this.showRegister = false
-  this.$router.push({ name: 'forgot-password' }).catch(() => {})
-},
-   async submitLogin() {
-  if (this.loading) return; 
+      this.showLogin = false;
+      this.showRegister = false;
+      this.$router.push({ name: 'forgot-password' }).catch(() => {});
+    },
+    
+    // Логика входа
+    async submitLogin() {
+      if (this.loading) return;
 
-  if (!this.form.Login || !this.form.Password) {
-    this.error = 'Заполните все поля'
-    return
-  }
+      if (!this.form.Login || !this.form.Password) {
+        this.error = 'Заполните все поля';
+        return;
+      }
 
-  this.loading = true
-  this.error = ''
+      this.loading = true;
+      this.error = '';
 
-  try {
-    const res = await api.post('/auth/login', {
-      Login: this.form.Login,
-      Password: this.form.Password
-    })
-     localStorage.setItem('token', res.data.Token)
-    localStorage.setItem('user', JSON.stringify({
-  Username: res.data.Username,
-  Email: res.data.Email,
-  Role: res.data.Role
-}))
+      try {
+        const res = await api.post('/auth/login', {
+          Login: this.form.Login,
+          Password: this.form.Password
+        });
 
-    this.$router.push('/home')
-  } catch (err) {
-    this.error = err.response?.data?.message || 'Ошибка входа'
-  } finally {
-    this.loading = false
-  }
-},
+        //  явное приведение токена к строке и проверяем его наличие
+        const token = String(res.data.Token);
+        
+        if (!token || token === 'undefined' || token === 'null') {
+          throw new Error('Сервер вернул некорректный токен');
+        }
+
+        // Сохраняем данные
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify({
+          Username: res.data.Username,
+          Email: res.data.Email,
+          Role: res.data.Role
+        }));
+
+        console.log('[LOGIN] Success, redirecting...');
+
+        this.$router.push('/home');
+        
+      } catch (err) {
+        console.error('[LOGIN] Error:', err);
+        this.error = err.response?.data?.message || 'Ошибка входа. Проверьте логин/пароль.';
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // Логика регистрации
     async submitRegister() {
-  this.loading = true
-  this.error = ''
-  if (!this.validatePassword()) {
-    this.loading = false;
-    return;
-  }
-  
-  if (!this.form.Username || !this.form.Password || !this.form.Email) {
-    this.loading = false;
-    this.error = 'Заполните все поля'
-    return
-  }
-  
-  try {
-    const res = await api.post('/auth/register', {
-      Username: this.form.Username,
-      Email: this.form.Email,
-      Password: this.form.Password
-    })
+      this.loading = true;
+      this.error = '';
+      
+      if (!this.validatePassword()) {
+        this.loading = false;
+        return;
+      }
+      
+      if (!this.form.Username || !this.form.Password || !this.form.Email) {
+        this.loading = false;
+        this.error = 'Заполните все поля';
+        return;
+      }
+      
+      try {
+        const res = await api.post('/auth/register', {
+          Username: this.form.Username,
+          Email: this.form.Email,
+          Password: this.form.Password
+        });
 
-    localStorage.setItem('token', res.data.Token)
-    localStorage.setItem('user', JSON.stringify({
-      Username: res.data.Username,
-      Email: res.data.Email,
-      Role: res.data.Role
-    }))
+        const token = String(res.data.Token);
+        if (!token || token === 'undefined') {
+          throw new Error('Сервер вернул некорректный токен');
+        }
 
-    this.currentUser = {
-      Username: res.data.Username,
-      Email: res.data.Email,
-      Role: res.data.Role
-    }
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify({
+          Username: res.data.Username,
+          Email: res.data.Email,
+          Role: res.data.Role
+        }));
 
-    this.$router.push('/home')
-  } catch (err) {
-    this.error = err.response?.data?.message || 'Ошибка регистрации'
-  } finally {
-    this.loading = false
-  }
-},
+        this.currentUser = {
+          Username: res.data.Username,
+          Email: res.data.Email,
+          Role: res.data.Role
+        };
+
+        this.$router.push('/home');
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Ошибка регистрации';
+      } finally {
+        this.loading = false;
+      }
+    },
+
     enterAsGuest() {
       const guestUser = {
         Username: 'Guest',
         Email: 'guest@local',
         Role: 'guest'
-      }
-      localStorage.setItem('user', JSON.stringify(guestUser))
-      localStorage.removeItem('token')
-      this.$router.push('/home')
+      };
+      localStorage.setItem('user', JSON.stringify(guestUser));
+      localStorage.removeItem('token'); // У гостя нет токена
+      this.$router.push('/home');
     },
+
     validatePassword() {
-  const p = this.form.Password
-  const cp = this.form.ConfirmPassword
+      const p = this.form.Password;
+      const cp = this.form.ConfirmPassword;
 
-  if (p.length < 6) {
-    this.error = 'Пароль должен быть минимум 6 символов'
-    return false
-  }
-
-  if (!/[A-Z]/.test(p)) {
-    this.error = 'Пароль должен содержать хотя бы 1 заглавную букву'
-    return false
-  }
-
-  if (!/[0-9]/.test(p)) {
-    this.error = 'Пароль должен содержать хотя бы 1 цифру'
-    return false
-  }
-
-  if (p !== cp) {
-    this.error = 'Пароли не совпадают'
-    return false
-  }
-
-  return true
-}
+      if (p.length < 6) {
+        this.error = 'Пароль должен быть минимум 6 символов';
+        return false;
+      }
+      if (!/[A-Z]/.test(p)) {
+        this.error = 'Пароль должен содержать хотя бы 1 заглавную букву';
+        return false;
+      }
+      if (!/[0-9]/.test(p)) {
+        this.error = 'Пароль должен содержать хотя бы 1 цифру';
+        return false;
+      }
+      if (p !== cp) {
+        this.error = 'Пароли не совпадают';
+        return false;
+      }
+      return true;
+    }
   }
 }
-
 </script>
