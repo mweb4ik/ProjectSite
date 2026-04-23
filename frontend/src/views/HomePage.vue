@@ -17,7 +17,7 @@
       <div v-else>
         <img src="/images/pc.png" alt="Компьютер" class="hero-img" />
         <p class="welcome-text">
-          Добро пожаловать, <span class="highlight">{{ user.Username }}</span>!
+          Добро пожаловать, <span class="highlight">{{ user.Username }}</span>
         </p>
         <p class="subtitle">Выберите компонент для изучения</p>
 
@@ -82,37 +82,37 @@ export default {
       return;
     }
 
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        this.user.Email = parsed.Email  || 'Неизвестно';
-        this.user.Role = parsed.Role  || 'guest';
-        this.user.Username = parsed.Username  || 'неизвестное имя';
-        this.user = JSON.parse(savedUser)
-        this.loading = false
-  return
-      } catch {}
-    }
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) {
+  try {
+    const parsed = JSON.parse(savedUser);
+    this.user.Email = parsed.Email || 'Неизвестно';
+    this.user.Role = parsed.Role || 'guest';
+    this.user.Username = parsed.Username || 'неизвестное имя';
+    this.loading = false;
+  } catch {}
+ }
 
     try {
-      const res = await getUserWithRetry();
+     const res = await getUserWithRetry();
 
-      this.user.Email = res.data.Email || 'Неизвестно';
-      this.user.Role =  res.data.Role || 'guest';
-      this.user.Username = parsed.Username  || 'неизвестное имя';
-      localStorage.setItem('user', JSON.stringify({
-      Username: this.username.user.Username, 
-      Email: this.user.email,
-      Role: this.user.role
-    }));
+     this.user.Email = res.data.Email || 'Неизвестно';
+     this.user.Role = res.data.Role || 'guest';
+     this.user.Username = res.data.Username || 'неизвестное имя';
+     localStorage.setItem('user', JSON.stringify({
+  Username: this.user.Username, 
+  Email: this.user.Email,
+  Role: this.user.Role
+}));
 
-    } catch (e) {
-      console.error(e);
-      if (e.response?.status === 401) {
-        localStorage.removeItem('token');
-        this.router.push('/');
-      }
+    }  catch (e) {
+  console.error(e);
+  if (e.response?.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.router.push('/');
+  }
+}
     } finally {
       this.loading = false;
     }
