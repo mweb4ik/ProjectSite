@@ -122,6 +122,19 @@ builder.Services.AddAuthentication(options =>
         
         ClockSkew = TimeSpan.Zero 
     };
+     options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"[JWT ERROR] Authentication failed: {context.Exception.GetType().Name} - {context.Exception.Message}");
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("[JWT] Token validated successfully!");
+            return Task.CompletedTask;
+        }
+    };
 });
 // Политики авторизации
 builder.Services.AddAuthorization(options =>
