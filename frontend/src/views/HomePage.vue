@@ -112,10 +112,9 @@ export default {
     localStorage.removeItem('user');
     this.router.push('/');
   }
-}
-    } finally {
+} finally {
       this.loading = false;
-    }
+}
   },
 
   methods: {
