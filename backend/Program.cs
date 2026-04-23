@@ -99,7 +99,19 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345");
+    var jwtKey = builder.Configuration["Jwt__Key"] 
+                 ?? builder.Configuration["Jwt:Key"] 
+                 ?? "SuperSecretKey12345SuperSecretKey12345";
+    
+    Console.WriteLine($"[JWT] Key loaded. Length: {jwtKey.Length}. First 4 chars: {jwtKey.Substring(0, Math.Min(4, jwtKey.Length))}...");
+
+    var key = Encoding.UTF8.GetBytes(jwtKey);
+    
+    if (key.Length < 16)
+    {
+        Console.WriteLine("[JWT] WARNING: Key is too short! Must be at least 16 characters.");
+    }
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = false,
