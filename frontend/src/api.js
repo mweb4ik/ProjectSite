@@ -1,11 +1,9 @@
 
 import axios from 'axios';
-//  URL из .env или оставляем localhost для локальной разработки
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// настроенный экземпляр axios
 export const api = axios.create({
-    baseURL: `${API_URL}/api`,  // Все запросы автоматически получат этот префикс
+    baseURL: `${API_URL}/api`, 
     headers: {
         'Content-Type': 'application/json',
     },

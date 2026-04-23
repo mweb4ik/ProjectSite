@@ -42,7 +42,7 @@ const router = createRouter({
 router.beforeEach((to) => {
   const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user'))
-
+  console.log('Router check:', { token: !!token, user, path: to.path }) 
   if (!token && to.path !== '/') {
     return '/'
   }
