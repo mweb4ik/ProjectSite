@@ -147,7 +147,7 @@ export default {
       Login: this.form.Login,
       Password: this.form.Password
     })
-     localStorage.setItem('token', res.data.token)
+     localStorage.setItem('token', res.data.Token)
     localStorage.setItem('user', JSON.stringify({
   Username: res.data.Username,
   Email: res.data.Email,
@@ -182,7 +182,7 @@ export default {
       Password: this.form.Password
     })
 
-    localStorage.setItem('token', res.data.token)
+    localStorage.setItem('token', res.data.Token)
     localStorage.setItem('user', JSON.stringify({
       Username: res.data.Username,
       Email: res.data.Email,
