@@ -15,9 +15,7 @@ api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     
     if (token && typeof token === 'string' && token.trim() !== '') {
-        // Явно устанавливаем заголовок, перезаписывая значение, если оно было
         config.headers.Authorization = `Bearer ${token}`;
-
         console.log('[API] Token found, setting Authorization header');
     } else {
         delete config.headers.Authorization;
@@ -27,11 +25,24 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Глобальная обработка ответов сервера
+api.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response?.status === 401) {
+            console.error('[API] 401 Unauthorized - токен недействителен');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+        return Promise.reject(error);
+    }
+);
+
 export async function getUserWithRetry(retries = 3) {
   try {
     return await api.get('/auth/me');
   } catch (e) {
-    // если нет ответа — сеть/сервер умер
     if (!e.response) {
       if (retries > 0) {
         await new Promise(r => setTimeout(r, 2000));
@@ -40,20 +51,10 @@ export async function getUserWithRetry(retries = 3) {
       throw e;
     }
 
-  // если не авторизован 
-if (e.response.status === 401) {
-  console.error(' [API] 401 Unauthorized! Проверь токен и настройки JWT на сервере.');
-  console.error('Ответ сервера:', e.response.data);
-  
-  // Временно закомментируй удаление токена и редирект
-  // localStorage.removeItem('token');
-  // localStorage.removeItem('user');
-  // window.location.href = '/'; 
-  
-  throw e;
-}
+    if (e.response.status === 401) {
+      throw e; // Обработается в интерцепторе 
+    }
 
-    // только 5xx ретраим
     if (e.response.status >= 500 && retries > 0) {
       await new Promise(r => setTimeout(r, 2000));
       return getUserWithRetry(retries - 1);

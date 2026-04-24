@@ -1,56 +1,57 @@
-# Фронтенд: игнори только локальные/секретные .env
-frontend/.env.local
-frontend/.env.*.local
-frontend/.env.production.local
-# Но разрешаем базовый .env с публичными настройками
-!frontend/.env
-!frontend/.env.production
+# --- Node / Frontend ---
 node_modules/
-## Visual Studio
-.vs/
+dist/
+.env
+.env.local
+.env.*.local
+frontend/.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.yarn
+
+# --- .NET / Backend ---
 [Bb]in/
 [Oo]bj/
+[Ll]og/
+[Ll]ogs/
 *.user
 *.suo
+*.userosscache
 *.sln.docstates
-
-## База данных и секреты 
-backend/Data/*.db
-backend/Data/admin-keys.json
-backend/appsettings.Development.json
-backend/.env
-
-## Фронтенд (Vue + Vite)
-frontend/node_modules/
-frontend/dist/
-frontend/.env
-frontend/.env.*
-
-## IDE
-.vscode/settings.json
-.vscode/tasks.json
-.vscode/launch.json
-
-## Системные файлы Windows
-Thumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-#Игнор временных файлов
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+*.pid
+*.pdb
+*.ilk
+*.meta
+*.so
+*.dylib
+*.dll
+*.exe
 *.log
-logs/
-log/
+*.mllog
+packages/*.nupkg
+packages/*.snupkg
+packages/**/*.nupkg
+packages/**/*.snupkg
+packages/**/tools/**
+.artifacts/
+
+# --- IDE / OS ---
+.vscode/*
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
 *.swp
 *.swo
 *~
-
-#Игнор кэша
-frontend/.vite/
-frontend/.output/
-backend/bin/
-backend/obj/
-
-##Игнор бд 
-*.db
-*.db-shm
-*.db-wal
+.DS_Store
+Thumbs.db

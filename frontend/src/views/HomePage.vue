@@ -44,106 +44,66 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AppHeader from '@/components/AppHeader.vue';
-import { components } from '@/data/components';
 import { getUserWithRetry } from '@/api';
 
-export default {
-  name: 'HomePage',
-  components: { AppHeader },
+const router = useRouter();
 
-  setup() {
-    const router = useRouter();
-    return { router };
-  },
+// Состояние компонента
+const user = ref({ Email: '', Role: '', Username: 'Загрузка...' });
+const loading = ref(true);
 
-  data() {
-    return {
-      user: { Email: '', Role: '', Username: 'Загрузка...' },
-      loading: true
-    };
-  },
-
-  computed: {
-    roleClass() {
-      if (!this.user.Role) return 'guest-badge';
-      switch(this.user.Role.toLowerCase()) {
-        case 'admin': return 'admin-badge';
-        case 'standard': return 'user-badge';
-        default: return 'guest-badge';
-      }
-    }
-  },
-
-  async mounted() {
-
-    const token = localStorage.getItem('token');
-    
-    if (!token || token === 'undefined' || token === 'null' || token.trim() === '') {
-      console.warn('[HOME] No valid token found, redirecting to login');
-      this.router.push('/');
-      return;
-    }
-
-    console.log('[HOME] Token found, length:', token.length);
-
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        this.user = {
-          Email: parsed.Email || '',
-          Role: parsed.Role || '',
-          Username: parsed.Username || 'Пользователь'
-        };
-      } catch (e) {
-        console.error('[HOME] Error parsing saved user', e);
-      }
-    }
-
+// Загрузка данных пользователя при монтировании
+onMounted(async () => {
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) {
     try {
-      const res = await getUserWithRetry();
-      
-      this.user = {
-        Email: res.data.Email || this.user.Email,
-        Role: res.data.Role || this.user.Role,
-        Username: res.data.Username || this.user.Username
+      const parsed = JSON.parse(savedUser);
+      user.value = {
+        Email: parsed.Email || '',
+        Role: parsed.Role || '',
+        Username: parsed.Username || 'Пользователь'
       };
-
-      localStorage.setItem('user', JSON.stringify(this.user));
-      console.log('[HOME] Auth successful, user data updated');
-      
     } catch (e) {
-      console.error('[HOME] Auth check failed:', e.response?.status, e.response?.data);
-      if (e.response?.status === 401) {
-        console.warn('[HOME] Token invalid (401). User kept on page for debugging. Please check Network tab.');
-        // localStorage.removeItem('token');
-        // localStorage.removeItem('user');
-        // this.router.push('/');
-      } else if (!e.response) {
-        console.warn('[HOME] Network error (server down?). Keeping local data.');
-      }
-    } finally {
-      this.loading = false;
+      console.error('[HOME] Ошибка парсинга сохранённого пользователя', e);
     }
-  },
-
-  methods: {
-    logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      this.router.push('/');
-    },
-
-    goTo(page) {
-      if (components[page]) {
-        this.router.push('/component/' + page);
-      } else {
-        this.router.push('/' + page);
-      }
-    },
   }
-}
+
+  try {
+    const res = await getUserWithRetry();
+    
+    user.value = {
+      Email: res.data.Email || user.value.Email,
+      Role: res.data.Role || user.value.Role,
+      Username: res.data.Username || user.value.Username
+    };
+
+    localStorage.setItem('user', JSON.stringify(user.value));
+    console.log('[HOME] Авторизация успешна, данные пользователя обновлены');
+    
+  } catch (e) {
+    console.error('[HOME] Проверка авторизации не удалась:', e.response?.status, e.response?.data);
+  } finally {
+    loading.value = false;
+  }
+});
+
+const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  router.push('/');
+};
+
+const goTo = (page) => {
+  const componentPages = ['videocard', 'processor', 'motherboard', 'cooling', 'ram', 'storage'];
+  
+  if (componentPages.includes(page)) {
+    router.push('/component/' + page);
+  } else {
+    router.push('/' + page);
+  }
+};
 </script>

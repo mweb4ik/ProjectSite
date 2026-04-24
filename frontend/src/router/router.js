@@ -8,7 +8,8 @@ import ProfilePage from '@/views/ProfilePage.vue'
 import AdminPage from '@/views/AdminPage.vue'
 import ComponentsPage  from '@/components/ComponentsPage.vue'
 import BiosPage  from '@/components/BiosPage.vue'
-import ComponentsDetailsPage from '@/components/ComponentsDetailsPage'  
+import ComponentsDetailsPage from '@/components/ComponentsDetailsPage.vue'
+
 const routes = [
   { path: '/', component: LoginPage },
   { path: '/home', component: HomePage },
@@ -44,6 +45,7 @@ const routes = [
   },
   { path: '/component/:type', component: ComponentsPage }
 ]
+
 const router = createRouter({
   history: createWebHistory(),
   routes
@@ -51,16 +53,20 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const token = localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user'))
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+
 
   if (!token && to.path !== '/') {
     return '/'
   }
 
-  // роли
-  if (to.path === '/profile' && user?.Role === 'guest') {
-    return '/home'
+
+  if (user?.Role === 'guest') {
+    if (to.path === '/profile' || to.path === '/admin') {
+      return '/home'
+    }
   }
+
 
   if (to.path === '/admin' && user?.Role !== 'admin') {
     return '/home'
@@ -68,11 +74,5 @@ router.beforeEach((to) => {
 
   return true
 })
-function isAdmin(user) {
-  return user?.Role === 'admin'
-}
 
-function isUser(user) {
-  return user?.Role === 'user'
-}
 export default router
