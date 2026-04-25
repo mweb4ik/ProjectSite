@@ -17,7 +17,7 @@
       <div v-else>
         <img src="/images/pc.png" alt="Компьютер" class="hero-img" />
         <p class="welcome-text">
-          Добро пожаловать, <span class="highlight">{{ user.Username }}</span>
+          Добро пожаловать, {{ user.Username }}
         </p>
         <p class="subtitle">Выберите компонент для изучения</p>
 

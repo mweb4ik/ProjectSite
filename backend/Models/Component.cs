@@ -13,8 +13,11 @@ public class Component
 }
 public enum ComponentCategory
 {
-    CPU,
-    GPU,
-    RAM,
-    Motherboard
+    Processor,
+    Motherboard,
+    Ram,
+    Storage,
+    Videocard,
+    Cooling
+
 }

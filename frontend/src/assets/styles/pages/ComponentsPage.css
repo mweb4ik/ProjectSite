@@ -1,0 +1,73 @@
+
+.components-page { min-height: 100vh; background: #f4f4f9; }
+.content { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.page-title { text-align: center; margin-bottom: 2rem; color: #333; }
+
+.search-bar { margin-bottom: 2rem; text-align: center; }
+.search-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.search-input:focus { border-color: #42b983; }
+
+.components-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.component-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.component-card:hover { transform: translateY(-5px); }
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.badge {
+  background: #eef2ff;
+  color: #4f46e5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.price { font-weight: bold; color: #10b981; }
+
+.card-title { font-size: 1.2rem; margin: 0 0 10px 0; color: #1f2937; }
+
+.card-specs { font-size: 0.9rem; color: #6b7280; margin-bottom: 20px; flex-grow: 1; }
+.card-specs p { margin: 4px 0; }
+
+.btn-select {
+  width: 100%;
+  padding: 10px;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+.btn-select:hover { background: #3aa876; }
+
+.loader, .empty-state { text-align: center; padding: 40px; color: #666; font-size: 1.2rem; }

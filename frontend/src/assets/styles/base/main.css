@@ -16,6 +16,8 @@ body {
   max-width: 1200px;
   padding: 40px 20px;
   text-align: center;
+  background: #0D0D0D; 
+  min-height: 100vh; 
 }
 
 /* ── Главная (LoginPage) ── */
@@ -43,6 +45,18 @@ body {
 .auth-buttons { margin-top: 20px; }
 
 /* ── Кнопки ── */
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  margin: 8px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+  font-family: 'Exo 2', sans-serif;
+}
 .btn.full { width: 100%; margin: 0; }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -165,3 +179,10 @@ body {
   text-decoration: underline;
 }
 .switch-link a:hover { color: #00FF9D; }
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
+}
+

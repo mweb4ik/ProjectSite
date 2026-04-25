@@ -12,3 +12,8 @@
   border-radius: 12px;
   box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
 }
+.components-page,
+.details-page {
+  min-height: 100vh;
+  background: #0D0D0D; /* Вместо #f4f4f9 */
+}
