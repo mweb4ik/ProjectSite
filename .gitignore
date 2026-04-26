@@ -55,6 +55,7 @@ packages/**/tools/**
 *~
 .DS_Store
 Thumbs.db
+backend/app.db
 # Visual Studio files
 .vs/
 *.suo

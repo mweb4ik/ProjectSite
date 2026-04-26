@@ -57,7 +57,8 @@ public class ComponentsController : ControllerBase
             Currency = component.Currency,
             Specifications = component.Specifications,
             Socket = component.Socket,
-            PowerConsumption = component.PowerConsumption
+            PowerConsumption = component.PowerConsumption,
+            ImageUrl = component.ImageUrl
         });
     }
 

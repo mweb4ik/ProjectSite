@@ -117,6 +117,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
+// Разрешение отдачу файлов из папки wwwroot
+app.UseStaticFiles(); 
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
@@ -165,7 +167,8 @@ async Task InitializeDatabaseAsync()
                         Currency = "$",
                         Specifications = "LGA1700, 24 cores, 32 threads",
                         Socket = "LGA1700",
-                        PowerConsumption = 253
+                        PowerConsumption = 253,
+                        ImageUrl = "wwwroot/images/IntelCorei9-13-900K.png"
                     },
                     new Component
                     {
@@ -175,7 +178,8 @@ async Task InitializeDatabaseAsync()
                         Price = 600,
                         Currency = "$",
                         Specifications = "ATX, DDR5 Support, LGA1700",
-                        Socket = "LGA1700"
+                        Socket = "LGA1700",
+                        ImageUrl = "wwwroot/images/ASUS-ROG-Maximus-Z790-Hero.png"
                     },
 
                     // --- AMD Platform (для проверки несовместимости) ---
@@ -188,7 +192,8 @@ async Task InitializeDatabaseAsync()
                         Currency = "$",
                         Specifications = "AM5, 16 cores",
                         Socket = "AM5",
-                        PowerConsumption = 170
+                        PowerConsumption = 170,
+                        ImageUrl = "wwwroot/images/Ryzen_9_3950X_4.jpg"
                     },
                     new Component
                     {
@@ -198,7 +203,8 @@ async Task InitializeDatabaseAsync()
                         Price = 300,
                         Currency = "$",
                         Specifications = "ATX, DDR5 Support, AM5",
-                        Socket = "AM5"
+                        Socket = "AM5",
+                        ImageUrl = "wwwroot/images/Gigabyte-X670-Aorus-Elite.jpg"
                     },
 
                     // --- RAM (DDR4 и DDR5) ---
@@ -209,7 +215,8 @@ async Task InitializeDatabaseAsync()
                         Category = ComponentCategory.Ram,
                         Price = 140,
                         Currency = "$",
-                        Specifications = "DDR5 6000MHz"
+                        Specifications = "DDR5 6000MHz",
+                        ImageUrl = "wwwroot/images/Kingston-FuryBeast-32GB-DDR5.png"
                     },
                     new Component
                     {
@@ -218,7 +225,8 @@ async Task InitializeDatabaseAsync()
                         Category = ComponentCategory.Ram,
                         Price = 90,
                         Currency = "$",
-                        Specifications = "DDR4 3200MHz"
+                        Specifications = "DDR4 3200MHz",
+                        ImageUrl = "wwwroot/images/Corsair-Vengeance-32GB-DDR4.png"
                     },
 
                     // --- GPU ---
@@ -230,7 +238,8 @@ async Task InitializeDatabaseAsync()
                         Price = 1600,
                         Currency = "$",
                         Specifications = "24GB GDDR6X",
-                        PowerConsumption = 450
+                        PowerConsumption = 450,
+                        ImageUrl = "wwwroot/images/NVIDIA-GeForce-RTX-4090.png"
                     },
                     new Component
                     {
@@ -240,7 +249,8 @@ async Task InitializeDatabaseAsync()
                         Price = 900,
                         Currency = "$",
                         Specifications = "24GB GDDR6",
-                        PowerConsumption = 355
+                        PowerConsumption = 355,
+                        ImageUrl = "wwwroot/images/AMD-Radeon-RX7900-XTX.png"
                     },
 
                     // --- Storage & Cooling ---
@@ -251,7 +261,8 @@ async Task InitializeDatabaseAsync()
                         Category = ComponentCategory.Storage,
                         Price = 100,
                         Currency = "$",
-                        Specifications = "NVMe M.2 SSD"
+                        Specifications = "NVMe M.2 SSD",
+                        ImageUrl = "wwwroot/images/Samsung-980-PRO-1TB.png"
                     },
                     new Component
                     {
@@ -260,7 +271,8 @@ async Task InitializeDatabaseAsync()
                         Category = ComponentCategory.Cooling,
                         Price = 65,
                         Currency = "$",
-                        Specifications = "Air Cooler, 260W TDP"
+                        Specifications = "Air Cooler, 260W TDP",
+                        ImageUrl = "wwwroot/images/DeepCool-620AK.png"
                     }
                 );
                 await db.SaveChangesAsync();
@@ -277,7 +289,7 @@ async Task InitializeDatabaseAsync()
                     Email = "admin@example.com",
                     PasswordHash = PasswordService.HashPassword("admin12345"),
                     CreatedAt = DateTime.UtcNow,
-                    Role = "admin"
+                    Role = "admin",
                 };
                 db.Users.Add(admin);
                 await db.SaveChangesAsync();

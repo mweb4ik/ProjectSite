@@ -10,6 +10,8 @@ public class Component
     public string Specifications { get; set; } = string.Empty;
     public string Socket { get; set; } = string.Empty;
     public int PowerConsumption { get; set; } // в ваттах
+
+       public string? ImageUrl { get; set; } 
 }
 public enum ComponentCategory
 {

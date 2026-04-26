@@ -40,10 +40,9 @@ const routes = [
     component: BiosPage
   },
   {  name: 'components-details',
-    path: '/components-details',
+    path: '/components-details/:id',
     component: ComponentsDetailsPage
   },
-  { path: '/component/:type', component: ComponentsPage }
 ]
 
 const router = createRouter({
