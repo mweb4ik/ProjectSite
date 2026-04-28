@@ -123,6 +123,16 @@ ProjectSite/
 
 **QuizResult** — `id, userId, score, totalQuestions, completedAt`
 
+**QuizQuestion** — `id, question, options[], correctAnswer, difficulty`
+
+**BiosVersion** — `id, motherboardId, version, releaseDate, description, stability, isBeta`
+
+**Motherboard** — `id, name, socket, chipset`
+
+**CpuSupport** — `id, cpuName, biosVersionId, isSupported`
+
+**OverclockProfile** — `id, userId, cpuName, frequency, voltage, temperature, stability, createdA`
+
 ## API Endpoints
 
 ###  Auth
@@ -156,6 +166,13 @@ ProjectSite/
 | POST | `/api/quiz/submit` | Отправка ответов |
 | GET | `/api/quiz/results` | История результатов |
 
+| Метод  | Endpoint                  | Описание                     |
+| ------ | ------------------------- | ---------------------------- |
+| GET    | `/api/quiz/random`        | Получить случайные вопросы   |
+| GET    | `/api/quiz/questions`     | Список всех вопросов (админ) |
+| POST   | `/api/quiz/questions`     | Добавить вопрос (админ)      |
+| DELETE | `/api/quiz/questions/:id` | Удалить вопрос               |
+
 ### BIOS
 | Метод | Endpoint | Описание |
 |-------|----------|----------|
@@ -163,12 +180,25 @@ ProjectSite/
 | GET | `/api/bios/:id` | Детали версии |
 | POST | `/api/bios/check-update` | Проверка обновления |
 
+| Метод | Endpoint                      | Описание                 |
+| ----- | ----------------------------- | ------------------------ |
+| GET   | `/api/bios/motherboards`      | Список материнских плат  |
+| GET   | `/api/bios/motherboards/:id`  | Детали материнской платы |
+| POST  | `/api/bios/check-cpu-support` | Проверка поддержки CPU   |
+
 ### Overclocking
 | Метод | Endpoint | Описание |
 |-------|----------|----------|
 | POST | `/api/overclocking/simulate` | Симуляция разгона |
 | GET | `/api/overclocking/leaderboard` | Таблица лидеров |
 | POST | `/api/overclocking/save-profile` | Сохранить  профиль(соранение текущего состояния с последующей возможностью простмотра предыдущего)|
+
+| Метод  | Endpoint                         | Описание                     |
+| ------ | -------------------------------- | ---------------------------- |
+| GET    | `/api/overclocking/profiles`     | Список профилей пользователя |
+| GET    | `/api/overclocking/profiles/:id` | Детали профиля               |
+| DELETE | `/api/overclocking/profiles/:id` | Удалить профиль              |
+
 
 ### Users (Admin)
 | Метод | Endpoint | Описание |
