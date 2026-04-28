@@ -131,7 +131,7 @@ ProjectSite/
 
 **CpuSupport** — `id, cpuName, biosVersionId, isSupported`
 
-**OverclockProfile** — `id, userId, cpuName, frequency, voltage, temperature, stability, createdA`
+**OverclockProfile** — `id, userId, cpuName, frequency, voltage, temperature, stability, createdAt`
 
 ## API Endpoints
 
