@@ -1,13 +1,16 @@
 <template>
   <div id="app">
     <!-- Главная страница с кнопками входа -->
-    <div v-if="!showLogin && !showRegister" class="home">
+    <div v-if="!showLogin && !showRegister && !currentUser" class="home">
       <h1>Познай Внутреннее устройство компьютера</h1>
       <img src="/images/pc.png" alt="Компьютер" />
       <div class="auth-buttons">
         <button class="btn btn-primary" @click="showLogin = true">Войти</button>
         <button class="btn btn-secondary" @click="showRegister = true">Зарегистрироваться</button>
       </div>
+      <button class="btn btn-ghost guest-btn" @click="enterAsGuest">
+        Войти как гость
+      </button>
     </div>
 
     <!-- Отображение данных текущего пользователя (если уже вошел) -->
@@ -22,8 +25,7 @@
       <div v-if="error" class="error-msg">{{ error }}</div>
 
       <div class="form-group">
-        <label>Login (Email или Username)</label>
-        <!-- Добавлен id и name для корректной работы браузеров -->
+        <label for="login-input">Login (Email или Username)</label>
         <input 
           id="login-input" 
           name="login"
@@ -31,17 +33,19 @@
           type="text" 
           placeholder="email или username" 
           @keyup.enter="submitLogin" 
+          autocomplete="username"
         />
       </div>
       <div class="form-group">
-        <label>Пароль</label>
+        <label for="password-input-login">Пароль</label>
         <input 
-          id="password-input" 
+          id="password-input-login" 
           name="password"
           v-model="form.Password" 
           type="password" 
           placeholder="••••••••" 
           @keyup.enter="submitLogin" 
+          autocomplete="current-password"
         />
       </div>
 
@@ -55,7 +59,7 @@
       </p>
 
       <button class="btn btn-ghost" @click="closeAuth">← Назад</button>
-      <button class="btn-ghost link" @click="goToForgot">Забыли пароль?</button>
+      <button class="btn btn-ghost link" @click="goToForgot">Забыли пароль?</button>
     </div>
 
     <!-- Форма регистрации -->
@@ -64,20 +68,48 @@
       <div v-if="error" class="error-msg">{{ error }}</div>
 
       <div class="form-group">
-        <label>Username</label>
-        <input v-model="form.Username" type="text" placeholder="nickname" @keyup.enter="submitRegister" />
+        <label for="register-username">Username</label>
+        <input 
+          id="register-username" 
+          v-model="form.Username" 
+          type="text" 
+          placeholder="nickname" 
+          @keyup.enter="submitRegister"
+          autocomplete="username"
+        />
       </div>
       <div class="form-group">
-        <label>Email</label>
-        <input v-model="form.Email" type="email" placeholder="your@email.com" @keyup.enter="submitRegister" />
+        <label for="register-email">Email</label>
+        <input 
+          id="register-email" 
+          v-model="form.Email" 
+          type="email" 
+          placeholder="your@email.com" 
+          @keyup.enter="submitRegister"
+          autocomplete="email"
+        />
       </div>
       <div class="form-group">
-        <label>Пароль <span class="hint">(минимум 6 символов)</span></label>
-        <input v-model="form.Password" type="password" placeholder="••••••••" @keyup.enter="submitRegister" />
+        <label for="register-password">Пароль <span class="hint">(минимум 6 символов)</span></label>
+        <input 
+          id="register-password" 
+          v-model="form.Password" 
+          type="password" 
+          placeholder="••••••••" 
+          @keyup.enter="submitRegister"
+          autocomplete="new-password"
+        />
       </div>
       <div class="form-group">
-        <label>Подтвердите пароль <span class="hint">(минимум 6 символов)</span></label>
-        <input v-model="form.ConfirmPassword" type="password" placeholder="••••••••" @keyup.enter="submitRegister" />
+        <label for="register-confirm">Подтвердите пароль <span class="hint">(минимум 6 символов)</span></label>
+        <input 
+          id="register-confirm" 
+          v-model="form.ConfirmPassword" 
+          type="password" 
+          placeholder="••••••••" 
+          @keyup.enter="submitRegister"
+          autocomplete="new-password"
+        />
       </div>
       <button class="btn btn-primary full" :disabled="loading" @click="submitRegister">
         {{ loading ? 'Регистрация...' : 'Создать аккаунт' }}
@@ -90,11 +122,6 @@
 
       <button class="btn btn-ghost" @click="closeAuth">← Назад</button>
     </div>
-
-    <!-- Кнопка входа как гость -->
-    <button class="btn btn-ghost" @click="enterAsGuest">
-      Войти как гость
-    </button>
   </div>
 </template>
 
@@ -208,14 +235,14 @@ export default {
       this.loading = true;
       this.error = '';
       
-      if (!this.validatePassword()) {
-        this.loading = false;
-        return;
-      }
-      
       if (!this.form.Username || !this.form.Password || !this.form.Email) {
         this.loading = false;
         this.error = 'Заполните все поля';
+        return;
+      }
+      
+      if (!this.validatePassword()) {
+        this.loading = false;
         return;
       }
       
@@ -226,26 +253,27 @@ export default {
           Password: this.form.Password
         });
 
-        const token = String(res.data.Token);
-        if (!token || token === 'undefined') {
+        const token = res.data.Token || res.data.token;
+        if (!token || token === 'undefined' || token === 'null') {
           throw new Error('Сервер вернул некорректный токен');
         }
 
-        localStorage.setItem('token', token);
+        localStorage.setItem('token', String(token));
         localStorage.setItem('user', JSON.stringify({
-          Username: res.data.Username,
-          Email: res.data.Email,
-          Role: res.data.Role
+          Username: res.data.Username || res.data.username,
+          Email: res.data.Email || res.data.email,
+          Role: res.data.Role || res.data.role
         }));
 
         this.currentUser = {
-          Username: res.data.Username,
-          Email: res.data.Email,
-          Role: res.data.Role
+          Username: res.data.Username || res.data.username,
+          Email: res.data.Email || res.data.email,
+          Role: res.data.Role || res.data.role
         };
 
         this.$router.push('/home');
       } catch (err) {
+        console.error('[REGISTER] Error:', err);
         this.error = err.response?.data?.message || 'Ошибка регистрации';
       } finally {
         this.loading = false;
