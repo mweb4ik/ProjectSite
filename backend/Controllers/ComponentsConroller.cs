@@ -172,6 +172,47 @@ public class ComponentsController : ControllerBase
 
         return CreatedAtAction(nameof(GetComponentById), new { id = newComponent.Id }, newComponent);
     }
+
+    // PUT: api/components/{id} (Только для админов)
+    [HttpPut("{id}")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> UpdateComponent(string id, [FromBody] Component updatedComponent)
+    {
+        if (updatedComponent == null)
+            return BadRequest(new { message = "Данные компонента не предоставлены" });
+
+        var component = await _db.Components.FindAsync(id);
+        if (component == null)
+            return NotFound(new { message = "Компонент не найден" });
+
+        component.Name = updatedComponent.Name;
+        component.Category = updatedComponent.Category;
+        component.Price = updatedComponent.Price;
+        component.Currency = updatedComponent.Currency;
+        component.Specifications = updatedComponent.Specifications;
+        component.Socket = updatedComponent.Socket;
+        component.PowerConsumption = updatedComponent.PowerConsumption;
+        component.ImageUrl = updatedComponent.ImageUrl;
+
+        await _db.SaveChangesAsync();
+
+        return Ok(component);
+    }
+
+    // DELETE: api/components/{id} (Только для админов)
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> DeleteComponent(string id)
+    {
+        var component = await _db.Components.FindAsync(id);
+        if (component == null)
+            return NotFound(new { message = "Компонент не найден" });
+
+        _db.Components.Remove(component);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { message = "Компонент удалён" });
+    }
 }
 
 // модель для запроса совместимости

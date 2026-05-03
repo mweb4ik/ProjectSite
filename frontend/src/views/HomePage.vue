@@ -53,7 +53,7 @@ import { getUserWithRetry } from '@/api';
 const router = useRouter();
 
 // Состояние компонента
-const user = ref({ Email: '', Role: '', Username: 'Загрузка...' });
+const user = ref({ Email: '', Role: '', Username: 'Загрузка...', Id: '' });
 const loading = ref(true);
 
 // Загрузка данных пользователя при монтировании
@@ -63,6 +63,7 @@ onMounted(async () => {
     try {
       const parsed = JSON.parse(savedUser);
       user.value = {
+        Id: parsed.Id || '',
         Email: parsed.Email || '',
         Role: parsed.Role || '',
         Username: parsed.Username || 'Пользователь'
@@ -76,6 +77,7 @@ onMounted(async () => {
     const res = await getUserWithRetry();
     
     user.value = {
+      Id: res.data.Id || user.value.Id,
       Email: res.data.Email || user.value.Email,
       Role: res.data.Role || user.value.Role,
       Username: res.data.Username || user.value.Username

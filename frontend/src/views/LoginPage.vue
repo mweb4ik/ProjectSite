@@ -113,20 +113,6 @@ export default {
 
     // LOGIN
     async login() {
-      console.log("Ответ от бэкенда:", data); // Посмотри в консоль, что там реально пришло
-
-const token = data.Token || data.token || data.accessToken || data; 
-
-if (token && typeof token === 'string') {
-    localStorage.setItem('token', token);
-    console.log("Токен успешно сохранен в LocalStorage");
-} else {
-    console.error("Не удалось извлечь токен из ответа бэкенда!");
-}
-
-
-
-
       if (this.loading) return;
 
       if (!this.form.Login || !this.form.Password) {
