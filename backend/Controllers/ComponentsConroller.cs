@@ -19,12 +19,10 @@ namespace PcComponentsApi.Controllers;
 public class ComponentsController : ControllerBase
 {
     private readonly AppDbContext _db;
-    private readonly IConfiguration _config;
 
-    public ComponentsController(AppDbContext db, IConfiguration config)
+    public ComponentsController(AppDbContext db)
     {
         _db = db;
-        _config = config;
     }
 
     // GET: api/components?name=rtx

@@ -131,17 +131,12 @@ const getImageUrl = (relativePath) => {
   if (cleanPath.startsWith('/')) {
     cleanPath = cleanPath.substring(1);
   }
-  
   const finalUrl = `${rootUrl}/${cleanPath}`;
-  console.log('🖼️ Формируем URL:', finalUrl); 
   return finalUrl;
 };
 
-// Если картинка не загрузилась
 const onImageError = (e) => {
-  // Скрываем битую картинку
   e.target.style.display = 'none';
-  // Можно добавить фолбэк иконку, если нужно
 };
 
 const loadComponent = async () => {

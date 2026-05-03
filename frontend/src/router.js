@@ -10,16 +10,15 @@ import AdminPage from '@/views/AdminPage.vue'
 import ComponentsPage from '@/components/ComponentsPage.vue'
 import BiosPage from '@/components/BiosPage.vue'
 import ComponentsDetailsPage from '@/components/ComponentsDetailsPage.vue'
+import BuilderPage from '@/components/BuilderPage.vue'
 
-// Временная заглушка для Builder, если файла еще нет
-const BuilderPage = { template: '<div><h1>Страница Сборки (В разработке)</h1></div>' }
 
 const routes = [
   { path: '/', component: LoginPage },
   { path: '/home', component: HomePage },
-  { path: '/component/:type', component: ComponentsPage }, // Важно: этот маршрут ловит /component/videocard
+  { path: '/component/:type', component: ComponentsPage }, 
   { path: '/components-details/:id', name: 'components-details', component: ComponentsDetailsPage },
-  { path: '/builder', name: 'builder', component: BuilderPage }, // Добавили маршрут
+  { path: '/builder', name: 'builder', component: BuilderPage }, 
   { path: '/bios', name: 'bios', component: BiosPage },
   { path: '/profile', name: 'profile', component: ProfilePage },
   { path: '/admin', name: 'admin', component: AdminPage },

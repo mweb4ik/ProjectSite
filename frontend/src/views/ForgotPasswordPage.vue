@@ -24,7 +24,6 @@
 </template>
 
 <script>
-const API = 'https://projectsite-backend.onrender.com'
 
 export default {
   name: 'ForgotPasswordPage',

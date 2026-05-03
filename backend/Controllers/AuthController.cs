@@ -6,11 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PcComponentsApi.Data;
 using PcComponentsApi.Models;
-using MailKit.Net.Smtp;
-using MimeKit;
-using MailKit.Security;
 using Microsoft.AspNetCore.Authorization;
-using System.Text.Json.Serialization;
+
 namespace PcComponentsApi.Controllers;
 
 [ApiController]
@@ -26,23 +23,41 @@ public class AuthController : ControllerBase
         _config = config;
     }
 
+     // ================= ME =================
+    [HttpGet("me")]
+    [Authorize] 
+    public async Task<IActionResult> GetMe()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null) return Unauthorized();
+
+      var user = await _db.Users.FindAsync(userIdClaim.Value);
+        if (user == null) return NotFound();
+
+        return Ok(new
+        {
+            user.Username,
+            user.Email,
+            user.Role
+        });
+    }
+    // ================= REGISTER =================
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest req)
     {
-        if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Password) || string.IsNullOrWhiteSpace(req.Username))
+        if (req == null)
+            return BadRequest();
+
+        if (string.IsNullOrWhiteSpace(req.Email) ||
+            string.IsNullOrWhiteSpace(req.Password) ||
+            string.IsNullOrWhiteSpace(req.Username))
             return BadRequest(new { message = "Все поля обязательны" });
 
-        if (req.Password.Length < 6)
-            return BadRequest(new { message = "Пароль должен быть не менее 6 символов" });
-
-        if (req.Username.Length < 4)
-            return BadRequest(new { message = "Имя пользователя должно быть не менее 4 символов" });
-
-        if (await _db.Users.AnyAsync(u => u.Email.ToLower() == req.Email.ToLower()))
-            return Conflict(new { message = "Пользователь с таким email уже существует" });
+        if (await _db.Users.AnyAsync(u => u.Email == req.Email))
+            return Conflict(new { message = "Email уже используется" });
 
         if (await _db.Users.AnyAsync(u => u.Username == req.Username))
-            return Conflict(new { message = "Пользователь с таким именем пользователя уже существует" });
+            return Conflict(new { message = "Username уже используется" });
 
         var user = new User
         {
@@ -65,15 +80,14 @@ public class AuthController : ControllerBase
         });
     }
 
+    // ================= LOGIN =================
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u =>
-            u.Email.ToLower() == req.Login.ToLower() || u.Username == req.Login);
-
-        if (user == null || !PasswordService.VerifyPassword(req.Password, user.PasswordHash))
-            return Unauthorized(new { message = "Неверный email или пароль" });
-
+       var login = req.Login.Trim().ToLower();
+var user = await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == login || u.Username.ToLower() == login);
+if (user == null || !PasswordService.VerifyPassword(req.Password, user.PasswordHash))
+    return Unauthorized(new { message = "Неверный логин или пароль" });
         return Ok(new AuthResponse
         {
             Token = GenerateJwt(user),
@@ -83,53 +97,43 @@ public class AuthController : ControllerBase
         });
     }
 
+    // ================= FORGOT PASSWORD (БЕЗ SMTP СБОЕВ) =================
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
     {
-        var email = req.Email?.Trim().ToLower();
+        if (req == null || string.IsNullOrWhiteSpace(req.Email))
+            return BadRequest();
+
+        var email = req.Email.Trim().ToLower();
+
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
-        if (user == null) return Ok(); // Не показ, что пользователя нет
+        if (user == null)
+            return Ok(); 
 
         user.ResetToken = Guid.NewGuid().ToString();
         user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(30);
+
         await _db.SaveChangesAsync();
 
-        try
+        return Ok(new
         {
-            var emailSection = _config.GetSection("Email");
-            var smtpEmail = emailSection["Address"] ?? throw new Exception("Email не задан");
-            var smtpPassword = emailSection["Password"] ?? throw new Exception("Password не задан");
-            var host = emailSection["Host"] ?? "smtp.gmail.com";
-            var port = int.Parse(emailSection["Port"] ?? "587");
-
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("PcArchitekture", smtpEmail));
-            message.To.Add(new MailboxAddress(user.Username, user.Email));
-            message.Subject = "Сброс пароля";
-            message.Body = new TextPart("plain") {Text = $"https://pc-components-app.vercel.app/reset-password?token={user.ResetToken}"};
-
-            using var client = new SmtpClient();
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(smtpEmail, smtpPassword);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = ex.Message });
-        }
-
-        return Ok();
+            message = "Reset token created",
+            token = user.ResetToken
+        });
     }
 
+    // ================= RESET PASSWORD =================
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
     {
+        if (req == null)
+            return BadRequest();
+
         var user = await _db.Users.FirstOrDefaultAsync(u => u.ResetToken == req.Token);
 
         if (user == null || user.ResetTokenExpiry < DateTime.UtcNow)
-            return BadRequest(new { message = "Неверный или просроченный токен" });
+            return BadRequest(new { message = "Token invalid or expired" });
 
         user.PasswordHash = PasswordService.HashPassword(req.NewPassword);
         user.ResetToken = null;
@@ -146,47 +150,27 @@ public class AuthController : ControllerBase
         });
     }
 
-    private string GenerateJwt(User user)
-    {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345"));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
-        };
-
-        var token = new JwtSecurityToken(
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(12),
-            signingCredentials: creds
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-[HttpGet("me")]
-[Authorize]
-public async Task<IActionResult> Me()
+private string GenerateJwt(User user)
 {
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-    if (string.IsNullOrEmpty(userId))
-        return Unauthorized();
-
-    var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
-
-    if (user == null)
-        return NotFound();
-
-    return Ok(new
+    var key = new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345"));
+    
+    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+    
+    var claims = new[]
     {
-        Username = user.Username,
-        Email = user.Email,
-        Role = user.Role
-    });
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Role, user.Role) 
+    };
+
+    var token = new JwtSecurityToken(
+        claims: claims,
+        expires: DateTime.UtcNow.AddHours(12),
+        signingCredentials: creds
+    );
+
+    return new JwtSecurityTokenHandler().WriteToken(token);
 }
 }

@@ -84,7 +84,3 @@
 .btn-retry { margin-top: 10px; padding: 8px 16px; background: #eee; border: none; cursor: pointer; border-radius: 4px; }
 
 
-.image-wrapper { text-align: center; margin-bottom: 20px; }
-.component-image { max-width: 100%; height: auto; max-height: 300px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-.icon-fallback { font-size: 4rem; display: block; margin-bottom: 10px; }
-.img-caption { color: #666; font-size: 0.9rem; margin-top: 8px; }

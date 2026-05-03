@@ -62,3 +62,35 @@ backend/app.db
 *.user
 *.userosscache
 *.sln.docstates
+
+
+
+# --- ENV FILES ---
+.env
+.env.*
+!.env.example
+
+# frontend env
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# backend env
+backend/.env
+backend/.env.*
+
+# --- Node ---
+node_modules/
+dist/
+
+# --- .NET ---
+bin/
+obj/
+Logs/
+backend/app.db
+
+# --- IDE ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

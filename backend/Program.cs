@@ -1,128 +1,84 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PcComponentsApi.Data;
 using PcComponentsApi.Models;
-using System.Text;
-using Npgsql;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS — 1 политика со всеми доменами
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-     policy
-         .AllowAnyOrigin()
-         .AllowAnyHeader()
-         .AllowAnyMethod()
- );
+
+// ================= CORS =================
+
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowAll", policy => {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
 });
 
-// Автовыбор БД: SQLite или PostgreSQL
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                       ?? builder.Configuration["DATABASE_URL"];
+// ================= DB =================
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=app.db"));
 
-if (string.IsNullOrEmpty(connectionString))
-{
-    connectionString = "Data Source=app.db";
-}
 
-bool isSqlite = !connectionString.Contains("Host=") && !connectionString.Contains("Server=");
+// ================= JWT =================
+var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345");
 
-if (isSqlite)
-{
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlite(connectionString));
-    Console.WriteLine("[DB] Using SQLite database.");
-}
-else
-{
-    string finalConnectionString = connectionString;
-    try
-    {
-        var npgsqlBuilder = new NpgsqlConnectionStringBuilder(connectionString);
-        npgsqlBuilder.TrustServerCertificate = true;
-        if (!npgsqlBuilder.ContainsKey("GssEncryptionMode"))
-        {
-            npgsqlBuilder.GssEncryptionMode = Npgsql.GssEncryptionMode.Disable;
-        }
-        finalConnectionString = npgsqlBuilder.ConnectionString;
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[DB] Warning: Could not parse connection string: {ex.Message}");
-        if (!connectionString.Contains("Trust Server Certificate"))
-        {
-            finalConnectionString += ";Trust Server Certificate=true;GssEncryptionMode=Disable";
-        }
-    }
-
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(finalConnectionString, npgsqlOptions =>
-        {
-            npgsqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorCodesToAdd: null);
-        }));
-
-    Console.WriteLine("[DB] Using PostgreSQL database.");
-}
-
-// JWT аутентификация
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
-    var jwtKey = builder.Configuration["Jwt__Key"]
-                 ?? builder.Configuration["Jwt:Key"]
-                 ?? "SuperSecretKey12345SuperSecretKey12345";
-
-    var key = Encoding.UTF8.GetBytes(jwtKey);
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = false,
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ClockSkew = TimeSpan.Zero
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = context =>
+        {
+            if (context.Request.Method == "OPTIONS") context.HandleResponse();
+            return Task.CompletedTask;
+        }
     };
 });
 
-// Политики авторизации
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
-    options.AddPolicy("StandardOnly", policy => policy.RequireRole("standard"));
-});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Urls.Add($"http://0.0.0.0:{port}");
+// ================= PIPELINE =================
+if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseCors("AllowAll");
-// Разрешение отдачу файлов из папки wwwroot
-app.UseStaticFiles(); 
+app.UseRouting();
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 200;
+        await context.Response.CompleteAsync();
+        return;
+    }
+    await next();
+});
+
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok("OK"));
+app.MapGet("/health", () => "OK");
+
+
+// ================= INIT METHOD =================
 
 //Инициализация БД
 async Task InitializeDatabaseAsync()
@@ -278,6 +234,143 @@ async Task InitializeDatabaseAsync()
                 await db.SaveChangesAsync();
                 Console.WriteLine(">>> Database seeded with test components (Intel/AMD/DDR4/DDR5)!");
             }
+
+            //Создание материнской платы
+if (!await db.Set<Motherboard>().AnyAsync())
+{
+    db.Set<Motherboard>().AddRange(
+        new Motherboard
+        {
+            Id = "mobo-intel-1",
+            Name = "ASUS ROG Maximus Z790 Hero",
+            Socket = "LGA1700",
+            Chipset = "Z790"
+        },
+        new Motherboard
+        {
+            Id = "mobo-amd-1",
+            Name = "Gigabyte X670 Aorus Elite",
+            Socket = "AM5",
+            Chipset = "X670"
+        }
+    );
+
+    await db.SaveChangesAsync();
+}
+            //Вопросы квиза
+            if (!await db.QuizQuestions.AnyAsync())
+        {
+            Console.WriteLine("[DB] Seeding quiz questions...");
+
+            db.QuizQuestions.AddRange(
+        new QuizQuestion
+        {
+            Question = "Какой сокет у Intel i9-13900K?",
+            Options = new[] { "AM4", "LGA1700", "AM5", "LGA1200" },
+            CorrectOptionIndex = 1,
+            Difficulty = "easy"
+        },
+        new QuizQuestion
+        {
+            Question = "Что важнее для стабильного разгона?",
+            Options = new[] { "RGB подсветка", "Напряжение", "Цвет корпуса", "SSD" },
+            CorrectOptionIndex = 1,
+            Difficulty = "medium"
+        },
+        new QuizQuestion
+        {
+            Question = "Что произойдет при слишком высоком напряжении?",
+            Options = new[] {
+                "Улучшится FPS",
+                "Снизится температура",
+                "Повреждение CPU",
+                "Ничего"
+            },
+            CorrectOptionIndex = 2,
+            Difficulty = "hard"
+        },
+        new QuizQuestion
+        {
+            Question = "Какой тип памяти у современных систем?",
+            Options = new[] { "DDR3", "DDR4/DDR5", "SDRAM", "GDDR3" },
+            CorrectOptionIndex = 1,
+            Difficulty = "easy"
+        }
+    );
+
+    await db.SaveChangesAsync();
+}
+//Создание BIOS
+if (!await db.BiosVersions.AnyAsync())
+{
+    Console.WriteLine("[DB] Seeding BIOS versions...");
+
+    db.BiosVersions.AddRange(
+        new BiosVersion
+        {
+            Id = "bios-1",
+            MotherboardId = "mobo-intel-1",
+            Version = "F1",
+            ReleaseDate = DateTime.UtcNow.AddMonths(-6),
+            Description = "Initial release",
+            Stability = 80,
+            IsBeta = false
+        },
+        new BiosVersion
+        {
+            Id = "bios-2",
+            MotherboardId = "mobo-intel-1",
+            Version = "F2",
+            ReleaseDate = DateTime.UtcNow.AddMonths(-3),
+            Description = "Improved CPU support",
+            Stability = 90,
+            IsBeta = false
+        }
+    );
+
+    await db.SaveChangesAsync();
+}
+//Добавление CpuSupport 
+if (!await db.CpuSupports.AnyAsync())
+{
+    Console.WriteLine("[DB] Seeding CPU support...");
+
+    db.CpuSupports.AddRange(
+        new CpuSupport
+        {
+            CpuId = "cpu-intel-1",
+            BiosVersionId = "bios-1",
+            IsSupported = true
+        },
+        new CpuSupport
+        {
+            CpuId = "cpu-intel-1",
+            BiosVersionId = "bios-2",
+            IsSupported = true
+        },
+        new CpuSupport
+        {
+            CpuId = "cpu-amd-1",
+            BiosVersionId = "bios-1",
+            IsSupported = false
+        }
+    );
+
+    await db.SaveChangesAsync();
+}
+//Тестовые результаты по усмолчанию 
+if (!await db.QuizResults.AnyAsync())
+{
+    db.QuizResults.Add(new QuizResult
+    {
+        UserId = "test-user",
+        Score = 2,
+        TotalQuestions = 4,
+        CompletedAt = DateTime.UtcNow
+    });
+
+    await db.SaveChangesAsync();
+}
 
             // Создание тестового админа
             if (!await db.Users.AnyAsync(u => u.Email == "admin@example.com"))

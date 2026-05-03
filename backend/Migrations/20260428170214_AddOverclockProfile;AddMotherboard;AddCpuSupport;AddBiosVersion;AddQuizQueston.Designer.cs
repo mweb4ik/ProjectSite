@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PcComponentsApi.Data;
 
@@ -10,9 +11,11 @@ using PcComponentsApi.Data;
 namespace PcComponentsApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428170214_AddOverclockProfile;AddMotherboard;AddCpuSupport;AddBiosVersion;AddQuizQueston")]
+    partial class AddOverclockProfileAddMotherboardAddCpuSupportAddBiosVersionAddQuizQueston
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.3");
@@ -97,7 +100,7 @@ namespace PcComponentsApi.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CpuId")
+                    b.Property<string>("CpuName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -107,8 +110,6 @@ namespace PcComponentsApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BiosVersionId");
-
-                    b.HasIndex("CpuId");
 
                     b.ToTable("CpuSupports");
                 });
@@ -140,7 +141,7 @@ namespace PcComponentsApi.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CpuId")
+                    b.Property<string>("CpuName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -208,7 +209,7 @@ namespace PcComponentsApi.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Options")
+                    b.PrimitiveCollection<string>("Options")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -292,21 +293,11 @@ namespace PcComponentsApi.Migrations
 
             modelBuilder.Entity("PcComponentsApi.Models.CpuSupport", b =>
                 {
-                    b.HasOne("PcComponentsApi.Models.BiosVersion", "BiosVersion")
+                    b.HasOne("PcComponentsApi.Models.BiosVersion", null)
                         .WithMany("SupportedCpus")
                         .HasForeignKey("BiosVersionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("PcComponentsApi.Models.Component", "Cpu")
-                        .WithMany()
-                        .HasForeignKey("CpuId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BiosVersion");
-
-                    b.Navigation("Cpu");
                 });
 
             modelBuilder.Entity("PcComponentsApi.Models.BiosVersion", b =>

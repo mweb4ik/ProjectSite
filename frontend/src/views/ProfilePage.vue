@@ -24,8 +24,8 @@
 </template>
 
 <script>
-const API = 'https://projectsite-backend.onrender.com'
 import AppHeader from '@/components/AppHeader.vue'
+import api from '@/api'
 export default {
   name: 'ProfilePage',
   data() {
