@@ -13,4 +13,4 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # ВАЖНО: замени на имя твоего dll
-ENTRYPOINT ["dotnet", "ProjectSite.dll"]
+ENTRYPOINT ["dotnet", PcComponentsApi.dll"]
