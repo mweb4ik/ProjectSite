@@ -20,15 +20,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // ==================== 2. CORS ====================
-builder.Services.AddCors(opt => opt.AddPolicy("AllowFrontend", p =>
-    p.WithOrigins(
-        "http://localhost:5173",
-        "https://pc-components-app.vercel.app",
-        "https://projectsite-luml.onrender.com"
-    )
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowCredentials()));
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("AllowFrontend", p =>
+        p
+        .SetIsOriginAllowed(_ => true)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()
+    );
+});
 // ==================== 3. DATABASE ====================
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=app.db"));
