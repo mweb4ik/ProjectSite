@@ -1,21 +1,19 @@
 {
   "name": "pc-components-website",
   "version": "1.0.0",
-  "description": "Сайт для изучения внутреннего устройства компьютера",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "anxious": "^0.0.0-security",
     "axios": "^1.15.2",
-    "router": "^2.2.0",
     "vue": "^3.4.0",
-    "vue-router": "^5.0.4"
+    "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.4",
+    "terser": "^5.47.1",
     "vite": "^6.4.2"
   }
 }
