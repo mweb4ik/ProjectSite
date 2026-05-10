@@ -1,1 +1,67 @@
-Nothing needs to be added to .gitignore since only a source file (frontend/src/api.js) was modified and there are no build artifacts, dependencies, or temporary files in the changes.
+# =====================
+# Dependencies
+# =====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+
+# =====================
+# Build output
+# =====================
+dist/
+build/
+out/
+.vercel/
+
+# =====================
+# Environment variables
+# =====================
+.env
+.env.*
+!.env.example
+
+# =====================
+# Logs
+# =====================
+logs/
+*.log
+
+# =====================
+# OS files
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# Editor / IDE
+# =====================
+.vscode/
+.idea/
+*.swp
+
+# =====================
+# Vercel
+# =====================
+.vercel
+
+# =====================
+# Cache
+# =====================
+.cache/
+.parcel-cache/
+.eslintcache
+
+# =====================
+# Testing
+# =====================
+coverage/
+
+# =====================
+# Optional (if frontend framework)
+# =====================
+.nuxt/
+.next/
+.svelte-kit/
