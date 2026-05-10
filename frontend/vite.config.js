@@ -3,8 +3,10 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
 export default defineConfig({
+  base: './', // 🔥 критично для Netlify
+
   plugins: [vue()],
-  
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
@@ -13,7 +15,7 @@ export default defineConfig({
 
   build: {
     sourcemap: false,
-    minify: 'terser',
-    cssMinify: false   
+    minify: 'esbuild', 
+    cssMinify: false
   }
 })
