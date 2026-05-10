@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const api = axios.create({
-    baseURL:'http://localhost:5124/api', 
+    baseURL: import.meta.env.VITE_API_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -10,7 +10,6 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  // 🔥 Блокируем literal "undefined", "null" и пустые строки
   if (token && typeof token === 'string' && token !== 'undefined' && token !== 'null' && token.trim() !== '') {
     config.headers.Authorization = `Bearer ${token}`;
   } else {
