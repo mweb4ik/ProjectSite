@@ -23,7 +23,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(opt => opt.AddPolicy("AllowFrontend", p =>
     p.WithOrigins(
         "http://localhost:5173",
-        "https://pc-components-app.vercel.app"
+        "https://pc-components-app.vercel.app",
+        "https://projectsite-luml.onrender.com"
     )
     .AllowAnyHeader()
     .AllowAnyMethod()
