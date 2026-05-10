@@ -15,7 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Motherboard> Motherboards=> Set<Motherboard>();
     public DbSet<OverclockProfile>  OverclockProfiles=> Set<OverclockProfile>();
     public DbSet<QuizQuestion> QuizQuestions=> Set<QuizQuestion>();
-    
+    public DbSet<ComponentView> ComponentViews => Set<ComponentView>();
 
 protected override void OnModelCreating(ModelBuilder builder)
 {

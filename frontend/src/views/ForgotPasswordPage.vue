@@ -24,7 +24,7 @@
 </template>
 
 <script>
-
+import '@/assets/styles/pages/ForgotPasswordPage.css'
 export default {
   name: 'ForgotPasswordPage',
   data() {

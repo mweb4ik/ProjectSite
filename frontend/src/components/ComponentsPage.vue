@@ -6,11 +6,11 @@
       <h1 class="page-title">{{ formatCategoryTitle(currentCategory) }}</h1>
 
       <div class="search-bar">
-        <input 
-          v-model="searchQuery" 
-          @input="handleSearch" 
-          type="text" 
-          placeholder="Поиск (RTX, Intel)..." 
+        <input
+          v-model="searchQuery"
+          @input="handleSearch"
+          type="text"
+          placeholder="Поиск (RTX, Intel)..."
           class="search-input"
         />
       </div>
@@ -19,31 +19,39 @@
       <div v-else-if="components.length === 0" class="empty-state">Ничего не найдено</div>
 
       <div v-else class="components-grid">
-        <div v-for="item in components" :key="item.id" class="component-card">
+        <div
+          v-for="item in components"
+          :key="item.Id"
+          class="component-card"
+        >
           <div class="card-image-box">
-            <img 
-              :src="getImageUrl(item.imageUrl)" 
-              :alt="item.name"
+            <img
+              :src="getImageUrl(item.ImageUrl)"
+              :alt="item.Name"
               class="card-img"
-              @error="($event) => $event.target.style.display='none'"
+              @error="onImageError"
             />
           </div>
-          
+
           <div class="card-content">
             <div class="card-header">
-              <span class="badge">{{ item.category }}</span>
-              <span class="price">{{ item.price }} {{ item.currency }}</span>
-            </div>
-            
-            <h3 class="card-title">{{ item.name }}</h3>
-            
-            <div class="card-specs">
-              <p><strong>Хар-ки:</strong> {{ item.specifications }}</p>
-              <p v-if="item.socket"><strong>Сокет:</strong> {{ item.socket }}</p>
-              <p v-if="item.powerConsumption"><strong>Вт:</strong> {{ item.powerConsumption }}</p>
+              <span class="badge">{{ item.Category }}</span>
+              <span class="price">{{ item.Price }} {{ item.Currency }}</span>
             </div>
 
-            <button class="btn-select" @click="selectComponent(item)">Выбрать</button>
+            <h3 class="card-title">{{ item.Name }}</h3>
+
+            <div class="card-specs">
+              <p><strong>Хар-ки:</strong> {{ item.Specifications }}</p>
+              <p v-if="item.Socket"><strong>Сокет:</strong> {{ item.Socket }}</p>
+              <p v-if="item.PowerConsumption">
+                <strong>Вт:</strong> {{ item.PowerConsumption }}
+              </p>
+            </div>
+
+            <button class="btn-select" @click="selectComponent(item)">
+              Выбрать
+            </button>
           </div>
         </div>
       </div>
@@ -52,100 +60,83 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import AppHeader from '@/components/AppHeader.vue';
-import api from '@/api';
+import '@/assets/styles/pages/ComponentsPage.css'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import AppHeader from '@/components/AppHeader.vue'
+import api from '@/api'
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
 
-const user = ref(JSON.parse(localStorage.getItem('user') || 'null'));
-const components = ref([]);
-const loading = ref(false);
-const searchQuery = ref('');
-const currentCategory = ref('all');
+const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+const components = ref([])
+const loading = ref(false)
+const searchQuery = ref('')
+const currentCategory = ref('all')
 
-// Формирование URL картинки 
-const getImageUrl = (relativePath) => {
-  if (!relativePath) return null;
-  const baseUrl = api.defaults.baseURL;
-  const rootUrl = baseUrl.replace(/\/api$/, '');
-  const cleanPath = relativePath.replace(/^wwwroot\//, '');
-  return `${rootUrl}/${cleanPath}`;
-};
+// 🔥 стабильный URL картинок
+const getImageUrl = (path) => {
+  if (!path) return ''
+  const base = api.defaults.baseURL.replace('/api', '')
+  return `${base}/${path.replace(/^\/+/, '').replace('wwwroot/', '')}`
+}
+
+const onImageError = (e) => {
+  e.target.style.display = 'none'
+}
 
 const fetchComponents = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let url = '/components';
-    const params = {};
+    const params = {}
 
-    switch (true) {
-      case (currentCategory.value && currentCategory.value !== 'all' && !searchQuery.value.trim()):
-        url = '/components/categories';
-        params.category = currentCategory.value;
-        break;
-      case (!currentCategory.value || currentCategory.value === 'all') && searchQuery.value.trim():
-        url = '/components';
-        params.name = searchQuery.value;
-        break;
-      case (currentCategory.value && currentCategory.value !== 'all' && searchQuery.value.trim()):
-         url = '/components/categories'; 
-         params.category = currentCategory.value;
-         params.name = searchQuery.value;
-         break;
-      default:
-        break;
+    if (currentCategory.value && currentCategory.value !== 'all') {
+      params.category = currentCategory.value
     }
 
-    const response = await api.get(url, { params });
-    let data = response.data;
-    
-    // Клиентский фильтр для комбо-поиска
-    if (currentCategory.value && currentCategory.value !== 'all' && searchQuery.value.trim()) {
-       const catLower = currentCategory.value.toLowerCase();
-       data = data.filter(item => String(item.category).toLowerCase() === catLower);
+    if (searchQuery.value.trim()) {
+      params.name = searchQuery.value
     }
 
-    components.value = data;
-  } catch (error) {
-    console.error('Ошибка:', error);
+    const res = await api.get('/components', { params })
+    components.value = res.data
+  } catch (e) {
+    console.error('Ошибка:', e)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
-let searchTimeout = null;
+let timeout = null
 const handleSearch = () => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(fetchComponents, 500);
-};
+  clearTimeout(timeout)
+  timeout = setTimeout(fetchComponents, 400)
+}
 
 const selectComponent = (item) => {
-  router.push(`/components-details/${item.id}`);
-};
+  router.push(`/components-details/${item.Id}`)
+}
 
 const formatCategoryTitle = (cat) => {
-  if (!cat || cat === 'all') return 'Все компоненты';
-  return cat.charAt(0).toUpperCase() + cat.slice(1);
-};
+  if (!cat || cat === 'all') return 'Все компоненты'
+  return cat.charAt(0).toUpperCase() + cat.slice(1)
+}
 
 const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  router.push('/');
-};
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  router.push('/')
+}
 
 onMounted(() => {
-  currentCategory.value = route.params.type || 'all';
-  fetchComponents();
-});
+  currentCategory.value = route.params.type || 'all'
+  fetchComponents()
+})
 
-watch(() => route.params.type, (newType) => {
-  currentCategory.value = newType || 'all';
-  searchQuery.value = ''; 
-  fetchComponents();
-});
+watch(() => route.params.type, (val) => {
+  currentCategory.value = val || 'all'
+  searchQuery.value = ''
+  fetchComponents()
+})
 </script>
-

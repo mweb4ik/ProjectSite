@@ -11,8 +11,9 @@ import ComponentsPage from '@/components/ComponentsPage.vue'
 import BiosPage from '@/components/BiosPage.vue'
 import ComponentsDetailsPage from '@/components/ComponentsDetailsPage.vue'
 import BuilderPage from '@/components/BuilderPage.vue'
-
-
+import LabPage from '@/components/LabPage.vue'
+import QuizPage from '@/views/QuizPage.vue'
+import QuizResultPage from '@/views/QuizResultPage.vue'
 const routes = [
   { path: '/', component: LoginPage },
   { path: '/home', component: HomePage },
@@ -24,6 +25,9 @@ const routes = [
   { path: '/admin', name: 'admin', component: AdminPage },
   { path: '/forgot-password', name: 'forgot-password', component: ForgotPasswordPage },
   { path: '/reset-password', name: 'reset-password', component: ResetPasswordPage },
+  { path: '/quiz', name: 'quiz', component:QuizPage },
+   { path: '/quiz-result', name: 'quiz-result', component:QuizResultPage },
+    { path: '/lab', name: 'lab', component:LabPage },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: ErrorPage }
 ]
 
@@ -36,9 +40,15 @@ router.beforeEach((to) => {
   const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user') || 'null')
 
-  if (!token && to.path !== '/') {
-    return '/'
-  }
+  const publicPages = [
+  '/',
+  '/forgot-password',
+  '/reset-password'
+]
+
+if (!token && user?.Role !== 'guest' && !publicPages.includes(to.path)) {
+  return '/'
+}
   if (user?.Role === 'guest') {
     if (to.path === '/profile' || to.path === '/admin') {
       return '/home'

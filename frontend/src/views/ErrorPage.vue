@@ -18,7 +18,7 @@
 
   <script>
   import { useRouter } from 'vue-router'
-
+  import '@/assets/styles/pages/ErrorPage.css'
   export default {
     name: 'ErrorPage',
     setup() {

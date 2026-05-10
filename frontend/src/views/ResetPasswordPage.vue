@@ -24,8 +24,7 @@
 </template>
 
 <script>
-const API = 'https://projectsite-backend.onrender.com'
-
+import '@/assets/styles/pages/ResetPasswordPage.css'
 export default {
   name: 'ResetPasswordPage',
   data() {

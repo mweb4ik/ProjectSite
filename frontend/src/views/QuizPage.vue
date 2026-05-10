@@ -1,54 +1,92 @@
 <template>
-  <div class="page">
+  <div class="quiz-page">
     <AppHeader />
 
-    <div class="content">
-      <h1>🧠 Квиз по ПК</h1>
+    <main class="quiz-container">
+      <div class="quiz-header">
+        <h1>🧠 PC Quiz Challenge</h1>
 
-      <div v-if="loading" class="skeleton-wrapper">
-        <div class="skeleton-text"></div>
-        <div class="skeleton-buttons">
-          <div class="skeleton-btn" v-for="i in 4" :key="i"></div>
-        </div>
-      </div>
-
-      <div v-else>
-        <div v-if="currentQuestion" class="quiz-card">
-          <h2>{{ currentQuestion.question }}</h2>
-
-          <div class="options">
-            <button
-              v-for="(opt, i) in currentQuestion.options"
-              :key="i"
-              class="option-btn"
-              :class="{ selected: answers[currentQuestion.id] === i }"
-              @click="selectAnswer(i)"
-            >
-              {{ opt }}
-            </button>
+        <div class="progress-wrapper" v-if="questions.length">
+          <div class="progress-info">
+            <span>Вопрос {{ index + 1 }} / {{ questions.length }}</span>
+            <span>{{ progressPercent }}%</span>
           </div>
 
-          <button class="btn-section" @click="next">
-            {{ isLast ? 'Завершить' : 'Далее →' }}
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              :style="{ width: progressPercent + '%' }"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- loading -->
+      <div v-if="loading" class="loading-card">
+        <div class="loader"></div>
+        <p>Загрузка вопросов...</p>
+      </div>
+
+      <!-- quiz -->
+      <div v-else-if="currentQuestion" class="quiz-card">
+        <div class="difficulty" :class="currentQuestion.Difficulty">
+          {{ difficultyText(currentQuestion.Difficulty) }}
+        </div>
+
+        <h2 class="question">
+          {{ currentQuestion.Question }}
+        </h2>
+
+        <div class="options">
+          <button
+            v-for="(opt, i) in currentQuestion.Options"
+            :key="i"
+            class="option-btn"
+            :class="{ active: answers[currentQuestion.Id] === i }"
+            @click="selectAnswer(i)"
+          >
+            <span class="option-index">
+              {{ String.fromCharCode(65 + i) }}
+            </span>
+
+            <span>{{ opt }}</span>
           </button>
         </div>
 
-        <div v-else>
-          <button class="btn-section" @click="submit">
-            Отправить результаты
+        <div class="actions">
+          <button
+            class="btn-next"
+            :disabled="answers[currentQuestion.Id] === undefined"
+            @click="next"
+          >
+            {{ isLast ? 'Завершить квиз 🚀' : 'Следующий вопрос →' }}
           </button>
         </div>
       </div>
-    </div>
+
+      <!-- finish -->
+      <div v-else class="finish-card">
+        <h2>🎉 Квиз завершён</h2>
+        <p>Все ответы сохранены. Отправить результат?</p>
+
+        <button class="btn-submit" @click="submit">
+          Показать результат
+        </button>
+      </div>
+    </main>
   </div>
 </template>
 
 <script>
 import AppHeader from '@/components/AppHeader.vue'
 import api from '@/api'
-
+import '@/assets/styles/pages/QuizPage.css'
 export default {
-  components: { AppHeader },
+  name: 'QuizPage',
+
+  components: {
+    AppHeader
+  },
 
   data() {
     return {
@@ -63,64 +101,67 @@ export default {
     currentQuestion() {
       return this.questions[this.index]
     },
+
     isLast() {
       return this.index === this.questions.length - 1
+    },
+
+    progressPercent() {
+      if (!this.questions.length) return 0
+      return Math.round((this.index / this.questions.length) * 100)
     }
   },
 
   async mounted() {
-    const res = await api.get('/quiz')
-    this.questions = res.data
-    this.loading = false
+    try {
+      const res = await api.get('/quiz')
+      this.questions = res.data
+    } catch (e) {
+      console.error('Ошибка загрузки квиза', e)
+    } finally {
+      this.loading = false
+    }
   },
 
   methods: {
+    difficultyText(diff) {
+      const map = {
+        easy: '🟢 Легко',
+        medium: '🟡 Средне',
+        hard: '🔴 Сложно'
+      }
+
+      return map[diff] || '⚪ Вопрос'
+    },
+
     selectAnswer(i) {
-      this.answers[this.currentQuestion.id] = i
+      this.answers[this.currentQuestion.Id] = i
     },
 
     next() {
-      if (!this.isLast) this.index++
-      else this.index++
+      if (this.index < this.questions.length) {
+        this.index++
+      }
     },
 
     async submit() {
-      const res = await api.post('/quiz/submit', this.answers)
-      this.$router.push({ path: '/quiz-result', state: res.data })
+      try {
+        const res = await api.post('/quiz/submit', this.answers)
+
+        localStorage.setItem(
+          'lastQuizResult',
+          JSON.stringify(res.data)
+        )
+
+        this.$router.push({
+          path: '/quiz-result',
+          state: res.data
+        })
+      } catch (e) {
+        console.error(e)
+        alert('Ошибка отправки результатов')
+      }
     }
   }
 }
 </script>
-
-<style scoped>
-.quiz-card {
-  background: #1e1e1e;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 0 25px rgba(0, 163, 255, 0.2);
-}
-
-.options {
-  display: grid;
-  gap: 10px;
-  margin: 20px 0;
-}
-
-.option-btn {
-  padding: 12px;
-  border-radius: 10px;
-  border: 2px solid #00a3ff33;
-  background: #2a2a2a;
-  color: white;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.option-btn:hover {
-  transform: translateY(-2px);
-}
-
-.selected {
-  background: linear-gradient(135deg, #00ff9d, #00a3ff);
-}
-</style>

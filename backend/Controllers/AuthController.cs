@@ -36,9 +36,10 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
-            user.Username,
-            user.Email,
-            user.Role
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            Role = user.Role
         });
     }
     // ================= REGISTER =================

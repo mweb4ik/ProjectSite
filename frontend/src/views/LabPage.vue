@@ -40,7 +40,7 @@
 <script>
 import AppHeader from '@/components/AppHeader.vue'
 import api from '@/api'
-
+import '@/assets/styles/pages/LabPage.css'
 export default {
   components: { AppHeader },
 
@@ -92,42 +92,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.page {
-  max-width: 900px;
-  margin: auto;
-}
-
-.card {
-  margin-top: 20px;
-  padding: 20px;
-  border-radius: 12px;
-  background: #1e1e1e;
-  box-shadow: 0 0 20px rgba(0, 163, 255, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-input {
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  background: #2a2a2a;
-  color: white;
-}
-
-.result {
-  text-align: center;
-}
-
-.good {
-  color: #00ff9d;
-  font-weight: bold;
-}
-
-.bad {
-  color: #ff4d4d;
-  font-weight: bold;
-}
-</style>

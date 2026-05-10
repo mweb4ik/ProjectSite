@@ -104,6 +104,7 @@
 </template>
 
 <script setup>
+import '@/assets/styles/pages/BuilderPage.css'
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AppHeader from '@/components/AppHeader.vue';

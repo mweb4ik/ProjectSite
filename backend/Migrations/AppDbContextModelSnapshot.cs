@@ -88,6 +88,27 @@ namespace PcComponentsApi.Migrations
                     b.ToTable("Components");
                 });
 
+            modelBuilder.Entity("PcComponentsApi.Models.ComponentView", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ComponentId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ViewedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ComponentViews");
+                });
+
             modelBuilder.Entity("PcComponentsApi.Models.CpuSupport", b =>
                 {
                     b.Property<string>("Id")
