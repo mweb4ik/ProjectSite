@@ -1,0 +1,140 @@
+[33me63c647[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mcode-structure-with-web-deploy[m[33m, [m[1;31morigin/code-structure-with-web-deploy[m[33m)[m fix(fronetend) install vue 6
+[33mc94b961[m modify git ignore
+[33m337fe7a[m[33m ([m[1;31morigin/api-авторизация-404-ошибка-77393[m[33m)[m Fix API base URL configuration and improve auth request handling
+[33m6eb9729[m **Fix authorization policies and add admin panel functionality**
+[33mdf65c3b[m feat(backend):add -m backend/Controllers/BiosController.cs; backend/Controllers/BuildsController.cs; backend/Controllers/OverclockController.cs; backend/Controllers/QuizController.cs ; to bd  fields and work with controllers to quiz and other
+[33m4401e7b[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix typo in OverclockProfile field name
+[33m1e81825[m Add quiz question and bios  structure and API endpoints
+[33m45e96e0[m git commit -m "feat(backend): add image support and fix DB initialization
+[33m14d6a8d[m feat(backend):add ProgramController.cs which have api endpoints to check capability with components,display components by names,categories;   fix(backend):add new components to DB if we dont have those in DB
+[33m8009d56[m refactor(auth): stabilize auth flow and optimize project structure
+[33m62902e6[m fix:add 'a' in method async SubmitLogin
+[33me7fd0a2[m fix:add custom url to cloudflare port and use more logs in LoginPag.vue
+[33m79e4332[m fix:fixed logic to authorized and unauthorized users in HomePage.vue and in LogunPage.vue
+[33m4c7f25e[m fix:fixed logic to authorized and unauthorized users in HomePage.vue and in LogunPage.vue
+[33mb76818b[m fix:add strict read token to unauthorized users in api.js
+[33m76ed662[m fix:add logs to HomePage.vue
+[33m659bea0[m fix:add logs fo jwt-key in Program.cs
+[33m8eccc6c[m fix:add log to unauthorized users in api.js
+[33mf062384[m fix:add ClockSkew to zero in backend Program.cs
+[33mc606885[m fix: in api.js get strict verification of login
+[33ma1f90e9[m fix:add check jwt key in Program.cs
+[33mb8e4f90[m fix:add using Npqsql in backend Program.cs
+[33m792f19c[m fix:add check migrations in backend Program.cs
+[33ma337cfa[m fix:add log command to router.js
+[33mf20e0ca[m fix:fix in LoginPage.vue name of token to Token
+[33mc21cdc9[m fix:fix in LoginPage.vue name of token to Token
+[33m0232bed[m fix:fix expected , in HomePage.vue
+[33m71d7876[m fix:fix fields with user.Username and user.Role in Apphader.vue and in HomePage.vue modified structure of savedUser
+[33m6390264[m fix:repair structure to back
+[33m708a9a7[m fix:repair o alias paths in vite.config.js
+[33mf13db1d[m fix:remove to back frontend structure
+[33m20098c9[m fix:rename ComponentsDetais.vue
+[33m806245f[m fix:fixed name in ComponentDetailsPage.vue to ComponentsDetailsPage.vue
+[33m55d76f9[m fix:rename ComponentsDetais.vue to ComponentsDetails.vue
+[33mc4a816b[m fix:fixed in frontend path with alias in router.js
+[33m818ef89[m fix:fixed structure in frontend int main.js path to files and in vite.config.js url path to files
+[33mae82c0e[m fix:fixed structure in frontend with css styles with truly names of import files
+[33m6abc673[m fix:fixed structure in frontend with css styles 2
+[33mceab372[m fix:fixed structure in frontend with css styles
+[33mc51f2f1[m fix:remove structure in frontend and modifyed AuthController.cs in backend with update method
+[33m563a507[m fix:fixed choice beeetwen PosgreSQL and Sqlite in Program.cs
+[33m534298b[m fix:Add PostgreSQL support for Render
+[33ma68b0f8[m[33m ([m[1;31morigin/test-structere-web-deploy[m[33m)[m fix: modified in frontend .env on render backend
+[33me411b2b[m fix:delete in directory assets in css files command <style>
+[33me2945a6[m fix(backend): hide UseHttpsRedirection()
+[33m6725a73[m fix(frontend): install axios
+[33m3a55f99[m fix(frontend): repair dependencies (axios + vue-router)
+[33mc14874a[m fix: HomePage.vue missed ','
+[33ma132021[m refactor(project): improve structure and prepare web deploy
+[33m4688510[m[33m ([m[1;31morigin/refactor/code-structure[m[33m, [m[1;32mrefactor/code-structure[m[33m)[m fix:add safety migrations
+[33mea825ce[m fix:add retrais to check issues
+[33m17a3b17[m fix: add new url policy
+[33m8a014ed[m fix: add axios dependency
+[33m114a1ed[m fix:set timeout 60 seconds in Program.cs to dont fall server
+[33m907d488[m fix: add 5 recent politics to Program.cs
+[33m27c3aba[m fix:temporarily add all politics
+[33mca570fe[m[33m ([m[1;31morigin/work-local-console[m[33m, [m[1;32mmain[m[33m)[m fix: add new url to Program.cs
+[33m0a06e0f[m fix: add new Vercel preview domain to CORS
+[33m81d6092[m fix: add axios dependency for API client
+[33mf6d230f[m Merge branch 'refactor/code-structure'
+[33m8ebfcbf[m feat: modified frontend structure with local and render development;added api.js and production
+[33mb9745a7[m[33m ([m[1;31morigin/vercel/install-vercel-web-analytics-vivrfu[m[33m)[m Install Vercel Web Analytics
+[33mb2ab075[m fix:stable DB init for production
+[33md459632[m fix: wrap DB init in try-catch to prevent crash on timeout
+[33m037a647[m fix: suppress pending model changes warning for production
+[33maa15724[m chore: add migration for pending model changes
+[33mda02b43[m fix: add correct Vercel CORS origin
+[33m88baccb[m feat: switch to EF Core MigrateAsync() + add migrations
+[33mb699275[m fix: start server before DB init, remove duplicate app.Run()
+[33mcb523ff[m feat: add PostgreSQL support and fix CORS configuration
+[33m142b0cd[m fix: update Dockerfile for .NET 10.0
+[33m6239b95[m fix: correct Dockerfile syntax with proper comments
+[33mf5aa767[m fix: configure port and CORS for Render deployment
+[33m6b47fb8[m chore: add Dockerfile for Render deployment
+[33mdd7958e[m Merge pull request #2 from mweb4ik/refactor/code-structure
+[33m56921e5[m refactor: extract styles to separate files and restructure components
+[33m1c637c4[m added new tables and fields to app.db(PCBuild,Components,ReultQuiz)
+[33mea580aa[m added password reset and new logic ti backend and added new pages to frontend
+[33me068ead[m refactor login/register forms with field username and update localStorage handling
+[33ma3ba00e[m Remove animated particles mention from README
+[33md804a5b[m удаление
+[33maac5317[m Новая версия проекта
+[33m337bc52[m Удаление всех файлов
+[33m52de74d[m Add files via upload
+[33mc004817[m Добавлена регистрация и вход
+[33me2e0962[m[33m ([m[1;31morigin/auth_feature[m[33m)[m just simple fix
+[33ma39fb9a[m auth feature added
+[33m6b12732[m Update README.md
+[33maecf301[m Update README.md
+[33m74742cf[m Update README.md
+[33mc2dc0cb[m Update README.md
+[33m272b448[m Update README.md
+[33m4d9aaa5[m Update README.md
+[33mc04c278[m Update README.md
+[33m1ef73db[m Update README.md
+[33mb32061e[m Update README.md
+[33m946b97f[m Update README.md
+[33mee8f7cc[m Update README.md
+[33mbae5829[m Update README.md
+[33ma79d174[m Update README.md
+[33m8041b0d[m Update README.md
+[33m8a06ce5[m Update README.md
+[33m83c600c[m Add files via upload
+[33m06e2913[m Create ex
+[33mf125951[m Delete docs/1
+[33mc19ae98[m Create 1
+[33m0a1510a[m Delete docs directory
+[33mc3df376[m Delete docs/home.png
+[33m30a10a5[m[33m ([m[1;31morigin/trash[m[33m)[m Delete docs/home.png
+[33me56d529[m Update README.md
+[33m0f94b5e[m Update README.md
+[33m673530c[m Update README.md
+[33m6a34027[m Update README.md
+[33m538f033[m Update README.md
+[33mf7c1768[m Update README.md
+[33m79f581e[m Update README.md
+[33m158f7c5[m Update README.md
+[33mfd81a0e[m Update README.md
+[33m8e62610[m Update README.md
+[33m0d23e7f[m Update README.md
+[33ma073d62[m Update README.md
+[33md93041f[m добавлены макеты
+[33m6d4b0bf[m Create cooling.png
+[33m62854b4[m Delete dir
+[33m8056e9a[m Create dir
+[33m5cd8f53[m был создан Home.Vue - главная страница
+[33m46ca83f[m обновлен стиль сайта
+[33ma6c26c1[m Delete главная страница - App.vue.png
+[33mc4bbb7d[m Add files via upload
+[33mef70490[m оформлена форма частиц и изменено изоражение начальной страницы,добавлена папка с макетами и макет 1
+[33m30d44a1[m feat: add falling particles animation
+[33m29e6146[m fix: add lock file and vercel config
+[33m3419336[m added vercel.json
+[33m7a86088[m Update README.md
+[33m0bd0425[m Update README.md
+[33meff0ad9[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/pasword-hashing[m[33m, [m[1;32mfeature/auth[m[33m, [m[1;32mdevelop[m[33m)[m был добавлен каркас api и хэширование паролей
+[33m18e3d23[m chore: настройка безопасной структуры проекта
+[33mecbd6c2[m Update README.md
+[33m0afc59d[m описание проекта
+[33mf93c4fc[m Initial commit
