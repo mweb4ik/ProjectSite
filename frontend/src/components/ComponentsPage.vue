@@ -75,7 +75,6 @@ const loading = ref(false)
 const searchQuery = ref('')
 const currentCategory = ref('all')
 
-// 🔥 стабильный URL картинок
 const getImageUrl = (path) => {
   if (!path) return ''
   const base = api.defaults.baseURL.replace('/api', '')
