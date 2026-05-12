@@ -6,13 +6,14 @@
       <h1 class="page-title">🛠️ Конфигуратор ПК</h1>
 
       <div class="builder-container">
-        <!-- Левая колонка: Выбор компонентов -->
+
+        <!-- LEFT -->
         <div class="selection-panel">
           <h2>Добавить компоненты</h2>
-          
+
           <div class="category-tabs">
-            <button 
-              v-for="cat in categories" 
+            <button
+              v-for="cat in categories"
               :key="cat"
               :class="['tab', { active: selectedCategory === cat }]"
               @click="selectCategory(cat)"
@@ -22,82 +23,100 @@
           </div>
 
           <div class="components-list">
-            <div v-if="loadingComponents" class="loader">Загрузка...</div>
-            <div v-else-if="components.length === 0" class="empty">Нет компонентов в этой категории</div>
-            
+
+            <div v-if="loadingComponents" class="loader">
+              Загрузка...
+            </div>
+
+            <div v-else-if="components.length === 0" class="empty">
+              Нет компонентов
+            </div>
+
             <div v-else class="grid">
               <div v-for="item in components" :key="item.id" class="component-card-small">
+
                 <div class="card-header">
                   <span class="name">{{ item.name }}</span>
                   <span class="price">{{ item.price }} {{ item.currency }}</span>
                 </div>
+
                 <p class="specs">{{ item.specifications }}</p>
-                <button 
-                  class="btn-add" 
+
+                <button
+                  class="btn-add"
                   @click="addComponent(item)"
                   :disabled="isInBuild(item.category)"
-                  :class="{ 'in-build': isInBuild(item.category) }"
                 >
                   {{ isInBuild(item.category) ? '✓ В сборке' : '+' }}
                 </button>
+
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Правая колонка: Текущая сборка -->
+        <!-- RIGHT -->
         <div class="build-panel">
           <h2>Ваша сборка</h2>
-          
+
           <div v-if="buildItems.length === 0" class="empty-build">
-            <p>Сборка пуста. Выберите компоненты слева.</p>
+            <p>Сборка пуста</p>
           </div>
 
-          <div v-else class="build-list">
-            <div v-for="(item, index) in buildItems" :key="item.id" class="build-item">
-              <div class="item-info">
-                <span class="badge">{{ getCategoryName(item.category) }}</span>
-                <span class="name">{{ item.name }}</span>
-                <span class="price">{{ item.price }} {{ item.currency }}</span>
+          <div v-else>
+
+            <div class="build-list">
+              <div
+                v-for="(item, index) in buildItems"
+                :key="item.id"
+                class="build-item"
+              >
+                <div>
+                  <span class="badge">{{ getCategoryName(item.category) }}</span>
+                  <span>{{ item.name }}</span>
+                </div>
+
+                <button @click="removeComponent(index)">✕</button>
               </div>
-              <button class="btn-remove" @click="removeComponent(index)">✕</button>
             </div>
 
+            <!-- SUMMARY -->
             <div class="summary">
-              <div class="total">
-                <span>Итого:</span>
-                <span class="total-price">{{ totalPrice }} {{ currency }}</span>
-              </div>
-              <div class="power-estimate" v-if="estimatedPower > 0">
-                <span>Потребление:</span>
-                <span>{{ estimatedPower }} Вт</span>
-              </div>
+              <div>Итого: {{ totalPrice }} {{ currency }}</div>
+              <div>Потребление: {{ estimatedPower }} W</div>
             </div>
 
+            <!-- ACTIONS -->
             <div class="actions">
-              <button class="btn-check" @click="checkCompatibility" :disabled="checking || buildItems.length === 0">
-                {{ checking ? 'Проверка...' : '✅ Проверить совместимость' }}
+              <button @click="checkCompatibility" :disabled="checking">
+                Проверить
               </button>
-              <button class="btn-save" @click="saveBuild" :disabled="saving || buildItems.length === 0">
-                {{ saving ? 'Сохранение...' : '💾 Сохранить сборку' }}
+
+              <button @click="saveBuild" :disabled="saving">
+                Сохранить
               </button>
-              <button class="btn-clear" @click="clearBuild">🗑️ Очистить</button>
+
+              <button @click="clearBuild">
+                Очистить
+              </button>
             </div>
 
-            <!-- Результаты проверки -->
-            <div v-if="compatibilityResult" class="result-box" :class="compatibilityResult.isCompatible ? 'success' : 'error'">
+            <!-- RESULT -->
+            <div v-if="compatibilityResult" class="result-box">
               <h3>{{ compatibilityResult.message }}</h3>
-              
-              <div v-if="compatibilityResult.errors?.length" class="errors">
-                <p v-for="(err, i) in compatibilityResult.errors" :key="i" class="error-item">❌ {{ err }}</p>
+
+              <div v-if="compatibilityResult.errors?.length">
+                <p v-for="e in compatibilityResult.errors" :key="e">❌ {{ e }}</p>
               </div>
-              
-              <div v-if="compatibilityResult.warnings?.length" class="warnings">
-                <p v-for="(warn, i) in compatibilityResult.warnings" :key="i" class="warn-item">⚠️ {{ warn }}</p>
+
+              <div v-if="compatibilityResult.warnings?.length">
+                <p v-for="w in compatibilityResult.warnings" :key="w">⚠️ {{ w }}</p>
               </div>
             </div>
+
           </div>
         </div>
+
       </div>
     </main>
   </div>
@@ -105,154 +124,166 @@
 
 <script setup>
 import '@/assets/styles/pages/BuilderPage.css'
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import AppHeader from '@/components/AppHeader.vue';
-import api from '@/api';
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import AppHeader from '@/components/AppHeader.vue'
+import api from '@/api'
 
-const router = useRouter();
-const user = ref(JSON.parse(localStorage.getItem('user') || 'null'));
+const router = useRouter()
 
-// Категории
-const categories = ['Processor', 'Motherboard', 'Ram', 'Videocard', 'Storage', 'Cooling'];
-const selectedCategory = ref('Processor');
+// safe user
+const user = ref(
+  JSON.parse(localStorage.getItem('user') || 'null')
+)
 
-// Данные
-const components = ref([]);
-const loadingComponents = ref(false);
-const buildItems = ref([]);
-const checking = ref(false);
-const saving = ref(false);
-const compatibilityResult = ref(null);
-const currency = ref('USD');
+// state
+const categories = [
+  'Processor',
+  'Motherboard',
+  'Ram',
+  'Videocard',
+  'Storage',
+  'Cooling'
+]
 
-// Загрузка компонентов выбранной категории
+const selectedCategory = ref('Processor')
+
+const components = ref([])
+const buildItems = ref([])
+
+const loadingComponents = ref(false)
+const checking = ref(false)
+const saving = ref(false)
+
+const compatibilityResult = ref(null)
+
+const currency = ref('USD')
+
+/* ================= LOAD ================= */
 const fetchComponents = async () => {
-  loadingComponents.value = true;
-  compatibilityResult.value = null; // Сброс результатов при смене категории
+  loadingComponents.value = true
+  compatibilityResult.value = null
+
   try {
     const res = await api.get('/components/categories', {
       params: { category: selectedCategory.value }
-    });
-    components.value = res.data;
+    })
+
+    components.value = res.data || []
+
     if (components.value.length > 0) {
-      currency.value = components.value[0].currency;
+      currency.value = components.value[0].currency || 'USD'
     }
+
   } catch (e) {
-    console.error('Ошибка загрузки компонентов:', e);
+    console.error('load error', e)
+    components.value = []
   } finally {
-    loadingComponents.value = false;
+    loadingComponents.value = false
   }
-};
+}
 
-const selectCategory = (cat) => {
-  selectedCategory.value = cat;
-  fetchComponents();
-};
-
-// Добавление в сборку
+/* ================= BUILD ================= */
 const addComponent = (item) => {
-  //Удаление уже имующегося компонента
-  const existingIndex = buildItems.value.findIndex(i => i.category === item.category);
-  if (existingIndex !== -1) {
-    buildItems.value.splice(existingIndex, 1);
-  }
-  buildItems.value.push(item);
-  compatibilityResult.value = null; 
-};
+  if (!item?.category) return
 
-// Удаление из сборки
+  buildItems.value = buildItems.value.filter(
+    x => x.category !== item.category
+  )
+
+  buildItems.value.push(item)
+
+  compatibilityResult.value = null
+}
+
 const removeComponent = (index) => {
-  buildItems.value.splice(index, 1);
-  compatibilityResult.value = null;
-};
+  buildItems.value.splice(index, 1)
+  compatibilityResult.value = null
+}
 
-// Очистка
 const clearBuild = () => {
-  buildItems.value = [];
-  compatibilityResult.value = null;
-};
+  buildItems.value = []
+  compatibilityResult.value = null
+}
 
-// Проверка наличия компонента категории в сборке
 const isInBuild = (category) => {
-  return buildItems.value.some(i => i.category === category);
-};
+  return buildItems.value.some(x => x.category === category)
+}
 
-// Расчеты
-const totalPrice = computed(() => {
-  return buildItems.value.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-});
+/* ================= COMPUTED ================= */
+const totalPrice = computed(() =>
+  buildItems.value.reduce((s, i) => s + (i.price || 0), 0)
+)
 
-const estimatedPower = computed(() => {
-  return buildItems.value.reduce((sum, item) => sum + (Number(item.powerConsumption) || 0), 0);
-});
+const estimatedPower = computed(() =>
+  buildItems.value.reduce((s, i) => s + (i.powerConsumption || 0), 0)
+)
 
-// Проверка совместимости
+/* ================= API ================= */
 const checkCompatibility = async () => {
-  if (buildItems.value.length === 0) return;
-  
-  checking.value = true;
-  compatibilityResult.value = null;
+  if (!buildItems.value.length) return
+
+  checking.value = true
 
   try {
-    const ids = buildItems.value.map(i => i.id);
-    const res = await api.post('/components/check-compatibility', { componentIds: ids });
-    compatibilityResult.value = res.data;
+    const ids = buildItems.value.map(x => x.id)
+
+    const res = await api.post('/components/check-compatibility', {
+      componentIds: ids
+    })
+
+    compatibilityResult.value = res.data
+
   } catch (e) {
-    console.error(e);
-    alert('Ошибка при проверке совместимости');
+    console.error(e)
   } finally {
-    checking.value = false;
+    checking.value = false
   }
-};
+}
 
-// Сохранение сборки в БД
 const saveBuild = async () => {
-  if (buildItems.value.length === 0) return;
-  
-  saving.value = true;
-  try {
-    const componentsJson = JSON.stringify(buildItems.value);
-    
-    const isCompatible = compatibilityResult.value ? compatibilityResult.value.isCompatible : false;
+  if (!buildItems.value.length) return
 
+  saving.value = true
+
+  try {
     await api.post('/builds', {
-      componentsJson: componentsJson,
+      componentsJson: JSON.stringify(buildItems.value),
       totalPrice: totalPrice.value,
       currency: currency.value,
-      isCompatible: isCompatible
-    });
+      isCompatible: compatibilityResult.value?.isCompatible || false
+    })
 
-    alert('Сборка успешно сохранена!');
+    alert('Сборка сохранена')
+
   } catch (e) {
-    console.error('Ошибка сохранения:', e);
-    alert('Не удалось сохранить сборку. Проверьте авторизацию.');
+    console.error(e)
+    alert('Ошибка сохранения')
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
-// Утилиты
-const getCategoryName = (cat) => {
-  const names = {
-    Processor: 'Процессор',
-    Motherboard: 'Материнская плата',
-    Ram: 'ОЗУ',
-    Videocard: 'Видеокарта',
-    Storage: 'Накопитель',
-    Cooling: 'Охлаждение'
-  };
-  return names[cat] || cat;
-};
+/* ================= UI ================= */
+const selectCategory = (cat) => {
+  selectedCategory.value = cat
+  fetchComponents()
+}
+
+const getCategoryName = (cat) => ({
+  Processor: 'CPU',
+  Motherboard: 'MB',
+  Ram: 'RAM',
+  Videocard: 'GPU',
+  Storage: 'SSD',
+  Cooling: 'COOL'
+}[cat] || cat)
 
 const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  router.push('/');
-};
+  localStorage.clear()
+  router.push('/')
+}
 
-onMounted(() => {
-  fetchComponents();
-});
+/* ================= INIT ================= */
+onMounted(fetchComponents)
 </script>
-

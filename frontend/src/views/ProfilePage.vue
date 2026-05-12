@@ -152,22 +152,16 @@
 import AppHeader from '@/components/AppHeader.vue'
 import api from '@/api'
 import '@/assets/styles/pages/ProfilePage.css'
+
 export default {
   name: 'ProfilePage',
 
-  components: {
-    AppHeader
-  },
+  components: { AppHeader },
 
   data() {
     return {
       loading: true,
-
-      user: {
-        Username: '',
-        Email: '',
-        Role: ''
-      },
+      user: null,
 
       quizResults: [],
       viewedComponents: [],
@@ -178,22 +172,16 @@ export default {
   computed: {
     bestScore() {
       if (!this.quizResults.length) return 0
-
       return Math.max(...this.quizResults.map(q => q.Score))
     },
 
     bestTotal() {
-      if (!this.quizResults.length) return 0
-
-      return this.quizResults[0].TotalQuestions
+      return this.quizResults[0]?.TotalQuestions || 0
     },
 
     progressPercent() {
       if (!this.totalComponents) return 0
-
-      return Math.round(
-        (this.viewedComponents.length / this.totalComponents) * 100
-      )
+      return Math.round((this.viewedComponents.length / this.totalComponents) * 100)
     }
   },
 
@@ -206,39 +194,37 @@ export default {
       this.loading = true
 
       try {
-        const savedUser = localStorage.getItem('user')
+   
+        const me = await api.get('/auth/me')
+        this.user = me.data
 
-        if (savedUser) {
-          this.user = JSON.parse(savedUser)
-        }
-
-        // quiz results
+        
         try {
           const quizRes = await api.get('/quiz/results')
-
           this.quizResults = quizRes.data || []
         } catch (e) {
-          console.warn('Quiz results error', e)
+          console.warn('Quiz error', e)
         }
 
-        // viewed components
+      
         const viewed = localStorage.getItem('viewed_components')
-
         if (viewed) {
           this.viewedComponents = JSON.parse(viewed)
         }
 
-        // total components
+    
         try {
           const compRes = await api.get('/components')
-
           this.totalComponents = compRes.data.length || 0
         } catch (e) {
           console.warn('Components error', e)
         }
 
       } catch (err) {
-        console.error(err)
+        console.error('Auth error:', err)
+
+    
+        this.logout()
       } finally {
         this.loading = false
       }
@@ -254,25 +240,21 @@ export default {
 
     getQuizClass(score, total) {
       const percent = (score / total) * 100
-
       if (percent >= 80) return 'excellent'
       if (percent >= 50) return 'good'
-
       return 'bad'
     },
 
     getQuizLabel(score, total) {
       const percent = (score / total) * 100
-
       if (percent >= 80) return 'Отлично'
       if (percent >= 50) return 'Хорошо'
-
       return 'Слабо'
     },
 
     logout() {
-      localStorage.removeItem('user')
       localStorage.removeItem('token')
+      localStorage.removeItem('user')
 
       this.$router.push('/')
     }
