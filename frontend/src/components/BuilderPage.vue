@@ -22,9 +22,10 @@
             </button>
           </div>
 
+          <!-- LIST -->
           <div class="components-list">
 
-            <div v-if="loadingComponents" class="loader">
+            <div v-if="loading" class="loader">
               Загрузка...
             </div>
 
@@ -33,7 +34,11 @@
             </div>
 
             <div v-else class="grid">
-              <div v-for="item in components" :key="item.id" class="component-card-small">
+              <div
+                v-for="item in components"
+                :key="item.id"
+                class="component-card-small"
+              >
 
                 <div class="card-header">
                   <span class="name">{{ item.name }}</span>
@@ -72,7 +77,9 @@
                 class="build-item"
               >
                 <div>
-                  <span class="badge">{{ getCategoryName(item.category) }}</span>
+                  <span class="badge">
+                    {{ getCategoryName(item.category) }}
+                  </span>
                   <span>{{ item.name }}</span>
                 </div>
 
@@ -106,11 +113,15 @@
               <h3>{{ compatibilityResult.message }}</h3>
 
               <div v-if="compatibilityResult.errors?.length">
-                <p v-for="e in compatibilityResult.errors" :key="e">❌ {{ e }}</p>
+                <p v-for="e in compatibilityResult.errors" :key="e">
+                  ❌ {{ e }}
+                </p>
               </div>
 
               <div v-if="compatibilityResult.warnings?.length">
-                <p v-for="w in compatibilityResult.warnings" :key="w">⚠️ {{ w }}</p>
+                <p v-for="w in compatibilityResult.warnings" :key="w">
+                  ⚠️ {{ w }}
+                </p>
               </div>
             </div>
 
@@ -133,6 +144,7 @@ const router = useRouter()
 
 const user = JSON.parse(localStorage.getItem('user') || 'null')
 
+/* ================= COMPOSABLE ================= */
 const {
   buildItems,
   components,
@@ -157,6 +169,19 @@ const {
   saveBuild
 } = useBuilder()
 
+/* ================= SAFE REQUEST CONTROL ================= */
+let requestId = 0
+
+const safeFetchComponents = async () => {
+  const id = ++requestId
+
+  await fetchComponents()
+
+  // если пришёл старый ответ — игнор
+  if (id !== requestId) return
+}
+
+/* ================= UI ================= */
 const categories = [
   'Processor',
   'Motherboard',
@@ -168,7 +193,7 @@ const categories = [
 
 const selectCategory = (cat) => {
   selectedCategory.value = cat
-  fetchComponents()
+  safeFetchComponents()
 }
 
 const getCategoryName = (cat) => ({
@@ -180,10 +205,14 @@ const getCategoryName = (cat) => ({
   Cooling: 'COOL'
 }[cat] || cat)
 
+/* ================= AUTH ================= */
 const logout = () => {
   localStorage.clear()
   router.push('/')
 }
 
-onMounted(fetchComponents)
+/* ================= INIT ================= */
+onMounted(() => {
+  safeFetchComponents()
+})
 </script>

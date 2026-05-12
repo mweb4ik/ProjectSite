@@ -70,14 +70,18 @@ const route = useRoute()
 const router = useRouter()
 
 const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+
 const components = ref([])
 const loading = ref(false)
+
 const searchQuery = ref('')
 const currentCategory = ref('all')
 
+let timeout = null
+
 const getImageUrl = (path) => {
   if (!path) return ''
-  const base = api.defaults.baseURL.replace('/api', '')
+  const base = api.defaults.baseURL?.replace('/api', '') || ''
   return `${base}/${path.replace(/^\/+/, '').replace('wwwroot/', '')}`
 }
 
@@ -85,17 +89,19 @@ const onImageError = (e) => {
   e.target.style.display = 'none'
 }
 
+/* ================= LOAD ================= */
 const fetchComponents = async () => {
   loading.value = true
+
   try {
     const params = {}
 
-    if (currentCategory.value !== 'all') {
+    if (currentCategory.value && currentCategory.value !== 'all') {
       params.category = currentCategory.value
     }
 
-    if (searchQuery.value.trim()) {
-      params.name = searchQuery.value
+    if (searchQuery.value?.trim()) {
+      params.name = searchQuery.value.trim()
     }
 
     const res = await api.get('/components', { params })
@@ -103,26 +109,31 @@ const fetchComponents = async () => {
     components.value = (res.data || []).map(mapComponent)
 
   } catch (e) {
-    console.error('Ошибка:', e)
+    console.error('Components load error:', e)
     components.value = []
   } finally {
     loading.value = false
   }
 }
 
-let timeout = null
+/* ================= SEARCH ================= */
 const handleSearch = () => {
   clearTimeout(timeout)
-  timeout = setTimeout(fetchComponents, 300)
+  timeout = setTimeout(() => {
+    fetchComponents()
+  }, 350)
 }
 
+/* ================= NAV ================= */
 const selectComponent = (item) => {
-  router.push(`/components-details/${item.id}`)
+  const id = item?.id || item?.Id
+  if (!id) return
+  router.push(`/components-details/${id}`)
 }
 
 const formatCategoryTitle = (cat) => {
   if (!cat || cat === 'all') return 'Все компоненты'
-  return cat.toUpperCase()
+  return cat.charAt(0).toUpperCase() + cat.slice(1)
 }
 
 const logout = () => {
@@ -130,6 +141,7 @@ const logout = () => {
   router.push('/')
 }
 
+/* ================= INIT ================= */
 onMounted(() => {
   currentCategory.value = route.params.type || 'all'
   fetchComponents()

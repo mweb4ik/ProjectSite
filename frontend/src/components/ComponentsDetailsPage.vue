@@ -65,13 +65,14 @@ const route = useRoute()
 const router = useRouter()
 
 const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+
 const component = ref(null)
 const loading = ref(true)
 const error = ref(null)
 
 const getImageUrl = (path) => {
   if (!path) return ''
-  const base = api.defaults.baseURL.replace('/api', '')
+  const base = api.defaults.baseURL?.replace('/api', '') || ''
   return `${base}/${path.replace(/^\/+/, '').replace('wwwroot/', '')}`
 }
 
@@ -90,6 +91,7 @@ const loadComponent = async () => {
     component.value = mapComponent(res.data)
 
   } catch (e) {
+    console.error(e)
     error.value = 'Ошибка загрузки компонента'
   } finally {
     loading.value = false
