@@ -1,12 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PcComponentsApi.Data;
 using PcComponentsApi.Models;
-using Microsoft.AspNetCore.Authorization;
 
 namespace PcComponentsApi.Controllers;
 
@@ -23,47 +23,49 @@ public class AuthController : ControllerBase
         _config = config;
     }
 
-     // ================= ME =================
+    // ================= ME =================
     [HttpGet("me")]
-    [Authorize] 
+    [Authorize]
     public async Task<IActionResult> GetMe()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null) return Unauthorized();
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
 
-      var user = await _db.Users.FindAsync(userIdClaim.Value);
-        if (user == null) return NotFound();
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+            return NotFound();
 
         return Ok(new
         {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            Role = user.Role
+            user.Id,
+            user.Username,
+            user.Email,
+            user.Role
         });
     }
+
     // ================= REGISTER =================
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest req)
     {
-        if (req == null)
-            return BadRequest();
+        if (req == null) return BadRequest();
 
         if (string.IsNullOrWhiteSpace(req.Email) ||
             string.IsNullOrWhiteSpace(req.Password) ||
             string.IsNullOrWhiteSpace(req.Username))
-            return BadRequest(new { message = "Все поля обязательны" });
+            return BadRequest(new { message = "All fields required" });
 
-        if (await _db.Users.AnyAsync(u => u.Email == req.Email))
-            return Conflict(new { message = "Email уже используется" });
+        var email = req.Email.Trim().ToLower();
 
-        if (await _db.Users.AnyAsync(u => u.Username == req.Username))
-            return Conflict(new { message = "Username уже используется" });
+        if (await _db.Users.AnyAsync(u => u.Email.ToLower() == email))
+            return Conflict(new { message = "Email already used" });
 
         var user = new User
         {
-            Username = req.Username,
-            Email = req.Email,
+            Id = Guid.NewGuid().ToString(),
+            Username = req.Username.Trim(),
+            Email = email,
             PasswordHash = PasswordService.HashPassword(req.Password),
             Role = "standard",
             CreatedAt = DateTime.UtcNow
@@ -72,33 +74,28 @@ public class AuthController : ControllerBase
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
 
-        return Ok(new AuthResponse
-        {
-            Token = GenerateJwt(user),
-            Username = user.Username,
-            Email = user.Email,
-            Role = user.Role
-        });
+        return Ok(GenerateAuth(user));
     }
 
     // ================= LOGIN =================
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
-       var login = req.Login.Trim().ToLower();
-var user = await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == login || u.Username.ToLower() == login);
-if (user == null || !PasswordService.VerifyPassword(req.Password, user.PasswordHash))
-    return Unauthorized(new { message = "Неверный логин или пароль" });
-        return Ok(new AuthResponse
-        {
-            Token = GenerateJwt(user),
-            Username = user.Username,
-            Email = user.Email,
-            Role = user.Role
-        });
+        if (req == null) return BadRequest();
+
+        var login = req.Login?.Trim().ToLower();
+
+        var user = await _db.Users.FirstOrDefaultAsync(u =>
+            u.Email.ToLower() == login || u.Username.ToLower() == login);
+
+        if (user == null ||
+            !PasswordService.VerifyPassword(req.Password, user.PasswordHash))
+            return Unauthorized(new { message = "Invalid credentials" });
+
+        return Ok(GenerateAuth(user));
     }
 
-    // ================= FORGOT PASSWORD (БЕЗ SMTP СБОЕВ) =================
+    // ================= FORGOT PASSWORD =================
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
     {
@@ -110,17 +107,23 @@ if (user == null || !PasswordService.VerifyPassword(req.Password, user.PasswordH
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
         if (user == null)
-            return Ok(); 
+            return Ok(new { message = "If email exists, reset link sent" });
 
-        user.ResetToken = Guid.NewGuid().ToString();
+        user.ResetToken = Guid.NewGuid().ToString("N");
         user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(30);
 
         await _db.SaveChangesAsync();
 
+        var frontendUrl = _config["Frontend:Url"] ?? "http://localhost:5173";
+        var resetLink = $"{frontendUrl}/reset-password?token={user.ResetToken}";
+
+        // DEV MODE (туннель)
+        Console.WriteLine($"RESET LINK: {resetLink}");
+
         return Ok(new
         {
-            message = "Reset token created",
-            token = user.ResetToken
+            message = "If email exists, reset link sent",
+            link = resetLink // можно убрать позже
         });
     }
 
@@ -128,7 +131,9 @@ if (user == null || !PasswordService.VerifyPassword(req.Password, user.PasswordH
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
     {
-        if (req == null)
+        if (req == null ||
+            string.IsNullOrWhiteSpace(req.Token) ||
+            string.IsNullOrWhiteSpace(req.NewPassword))
             return BadRequest();
 
         var user = await _db.Users.FirstOrDefaultAsync(u => u.ResetToken == req.Token);
@@ -142,36 +147,43 @@ if (user == null || !PasswordService.VerifyPassword(req.Password, user.PasswordH
 
         await _db.SaveChangesAsync();
 
-        return Ok(new AuthResponse
+        return Ok(new { message = "Password changed successfully" });
+    }
+
+    // ================= JWT =================
+    private object GenerateAuth(User user)
+    {
+        return new
         {
             Token = GenerateJwt(user),
             Username = user.Username,
             Email = user.Email,
             Role = user.Role
-        });
+        };
     }
 
-private string GenerateJwt(User user)
-{
-    var key = new SymmetricSecurityKey(
-        Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345"));
-    
-    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-    
-    var claims = new[]
+    private string GenerateJwt(User user)
     {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Name, user.Username),
-        new Claim(ClaimTypes.Email, user.Email),
-        new Claim(ClaimTypes.Role, user.Role) 
-    };
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_config["Jwt:Key"] ??
+            "SuperSecretKey12345SuperSecretKey12345"));
 
-    var token = new JwtSecurityToken(
-        claims: claims,
-        expires: DateTime.UtcNow.AddHours(12),
-        signingCredentials: creds
-    );
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-    return new JwtSecurityTokenHandler().WriteToken(token);
-}
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role)
+        };
+
+        var token = new JwtSecurityToken(
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(12),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 }

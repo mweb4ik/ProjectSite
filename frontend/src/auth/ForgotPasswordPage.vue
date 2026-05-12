@@ -1,65 +1,82 @@
 <template>
   <div id="app">
-    <header class="header">
-      <h1 class="highlight">Восстановление пароля</h1>
-    </header>
+    <div class="auth-card">
+      <h2>Восстановление пароля</h2>
 
-    <main class="content">
-      <div v-if="loading" class="skeleton-wrapper">
-        <div class="skeleton-text" style="width: 70%; height: 25px;"></div>
-        <div class="skeleton-text" style="width: 60%; height: 25px;"></div>
-        <div class="skeleton-btn" style="height: 45px; margin-top: 20px;"></div>
+      <div v-if="error" class="error-msg">{{ error }}</div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input
+          v-model="email"
+          type="email"
+          placeholder="example@mail.com"
+          @keyup.enter="submitForgot"
+        />
       </div>
 
-      <div v-else class="auth-card">
-        <p>Введите ваш email для восстановления пароля</p>
-        <input v-model="Email" placeholder="example@email.com" class="input-field" />
-        <button class="btn btn-primary full" @click="submitForgot" :disabled="loading">
-          {{ loading ? 'Отправка...' : 'Подтвердить' }}
-        </button>
-        <p v-if="error" class="error-msg">{{ error }}</p>
-      </div>
-    </main>
+      <button
+        class="btn btn-primary full"
+        :disabled="loading"
+        @click="submitForgot"
+      >
+        {{ loading ? 'Отправка...' : 'Отправить' }}
+      </button>
+
+      <p v-if="message" class="success-msg">{{ message }}</p>
+
+      <button class="btn btn-ghost" @click="goBack">
+        ← Назад
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
-const API = 'https://projectsite-backend.onrender.com'
+import api from '@/api'
+import '@/assets/styles/pages/auth.css'
 
 export default {
   name: 'ForgotPasswordPage',
+
   data() {
     return {
-      Email: '',
+      email: '',
       loading: false,
-      error: ''
+      error: '',
+      message: ''
     }
   },
+
   methods: {
+    goBack() {
+      this.$router.push('/')
+    },
+
     async submitForgot() {
-      if (!this.Email) {
+      this.error = ''
+      this.message = ''
+
+      if (!this.email.trim()) {
         this.error = 'Введите email'
         return
       }
 
       this.loading = true
-      this.error = ''
 
       try {
         const res = await api.post('/auth/forgot-password', {
-        Email: this.Email
-      })
+          Email: this.email
+        })
 
-        if (!res.ok) {
-          this.error = 'Ошибка отправки'
-          return
-        }
+        console.log('[FORGOT]', res.data)
 
-        alert('Письмо отправлено')
+        this.message = 'Ссылка создана (проверь backend консоль)'
 
       } catch (err) {
-        console.error(err)
-        this.error = 'Сервер недоступен'
+        this.error =
+          err.response?.data?.message ||
+          'Ошибка запроса'
       } finally {
         this.loading = false
       }

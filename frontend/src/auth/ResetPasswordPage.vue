@@ -1,81 +1,97 @@
 <template>
   <div id="app">
-    <header class="header">
-      <h1 class="highlight">Сброс пароля</h1>
-    </header>
+    <div class="auth-card">
+      <h2>Сброс пароля</h2>
 
-    <main class="content">
-      <div v-if="loading" class="skeleton-wrapper">
-        <div class="skeleton-text" style="width: 70%; height: 25px;"></div>
-        <div class="skeleton-text" style="width: 60%; height: 25px;"></div>
-        <div class="skeleton-btn" style="height: 45px; margin-top: 20px;"></div>
+      <div v-if="error" class="error-msg">{{ error }}</div>
+
+      <div class="form-group">
+        <label>Новый пароль</label>
+        <input
+          v-model="newPassword"
+          type="password"
+          placeholder="••••••••"
+          @keyup.enter="submitReset"
+        />
       </div>
 
-      <div v-else class="auth-card">
-        <p>Введите новый пароль для вашего аккаунта</p>
-        <input v-model="form.NewPassword" placeholder="Новый пароль" class="input-field" />
-        <button class="btn btn-primary full" @click="submitReset" :disabled="loading">
-          {{ loading ? 'Отправка...' : 'Сбросить пароль' }}
-        </button>
-        <p v-if="error" class="error-msg">{{ error }}</p>
-      </div>
-    </main>
+      <button
+        class="btn btn-primary full"
+        :disabled="loading"
+        @click="submitReset"
+      >
+        {{ loading ? 'Сброс...' : 'Сбросить пароль' }}
+      </button>
+
+      <p v-if="message" class="success-msg">{{ message }}</p>
+
+      <button class="btn btn-ghost" @click="goBack">
+        ← Назад
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
-const API = 'https://projectsite-backend.onrender.com'
+import api from '@/api'
+import '@/assets/styles/pages/auth.css'
 
 export default {
   name: 'ResetPasswordPage',
+
   data() {
     return {
+      token: '',
+      newPassword: '',
       loading: false,
       error: '',
-      form: {
-        Token: '',
-        NewPassword: ''
-      }
+      message: ''
     }
   },
-  mounted() {
-  const token = this.$route.query.token
-  if (token && token.trim() !== '') {
-    this.form.Token = token
 
-  }
-},
+  mounted() {
+    this.token = this.$route.query.token || ''
+  },
+
   methods: {
+    goBack() {
+      this.$router.push('/')
+    },
+
     async submitReset() {
-      if (!this.form.Token || !this.form.NewPassword) {
-        this.error = 'Заполните все поля'
+      this.error = ''
+      this.message = ''
+
+      if (!this.token) {
+        this.error = 'Нет токена'
+        return
+      }
+
+      if (!this.newPassword.trim()) {
+        this.error = 'Введите пароль'
         return
       }
 
       this.loading = true
-      this.error = ''
 
       try {
         const res = await api.post('/auth/reset-password', {
-  Token: this.form.Token,
-  NewPassword: this.form.NewPassword
-})
-       if (!this.form.Token) {
-    this.error = 'Неверная ссылка'
-    return
-    }
-        if (!res.ok) {
-          this.error = 'Ошибка сброса'
-          return
-        }
-        const data = await res.json()
-        alert('Пароль успешно обновлён')
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify(data))
-        this.$router.push('/home')
+          Token: this.token,
+          NewPassword: this.newPassword
+        })
+
+        console.log('[RESET]', res.data)
+
+        this.message = 'Пароль изменён'
+
+        setTimeout(() => {
+          this.$router.push('/')
+        }, 1500)
+
       } catch (err) {
-        console.error(err)
-        this.error = 'Сервер недоступен'
+        this.error =
+          err.response?.data?.message ||
+          'Ошибка сброса'
       } finally {
         this.loading = false
       }
@@ -83,4 +99,3 @@ export default {
   }
 }
 </script>
-
