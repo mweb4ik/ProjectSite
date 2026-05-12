@@ -124,19 +124,39 @@
 
 <script setup>
 import '@/assets/styles/pages/BuilderPage.css'
-import { ref, computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
-import api from '@/api'
+import { useBuilder } from '@/composables/useBuilder'
 
 const router = useRouter()
 
-// safe user
-const user = ref(
-  JSON.parse(localStorage.getItem('user') || 'null')
-)
+const user = JSON.parse(localStorage.getItem('user') || 'null')
 
-// state
+const {
+  buildItems,
+  components,
+  selectedCategory,
+
+  loading,
+  checking,
+  saving,
+
+  compatibilityResult,
+  currency,
+
+  totalPrice,
+  estimatedPower,
+
+  fetchComponents,
+  addComponent,
+  removeComponent,
+  clearBuild,
+  isInBuild,
+  checkCompatibility,
+  saveBuild
+} = useBuilder()
+
 const categories = [
   'Processor',
   'Motherboard',
@@ -146,125 +166,6 @@ const categories = [
   'Cooling'
 ]
 
-const selectedCategory = ref('Processor')
-
-const components = ref([])
-const buildItems = ref([])
-
-const loadingComponents = ref(false)
-const checking = ref(false)
-const saving = ref(false)
-
-const compatibilityResult = ref(null)
-
-const currency = ref('USD')
-
-/* ================= LOAD ================= */
-const fetchComponents = async () => {
-  loadingComponents.value = true
-  compatibilityResult.value = null
-
-  try {
-    const res = await api.get('/components/categories', {
-      params: { category: selectedCategory.value }
-    })
-
-    components.value = res.data || []
-
-    if (components.value.length > 0) {
-      currency.value = components.value[0].currency || 'USD'
-    }
-
-  } catch (e) {
-    console.error('load error', e)
-    components.value = []
-  } finally {
-    loadingComponents.value = false
-  }
-}
-
-/* ================= BUILD ================= */
-const addComponent = (item) => {
-  if (!item?.category) return
-
-  buildItems.value = buildItems.value.filter(
-    x => x.category !== item.category
-  )
-
-  buildItems.value.push(item)
-
-  compatibilityResult.value = null
-}
-
-const removeComponent = (index) => {
-  buildItems.value.splice(index, 1)
-  compatibilityResult.value = null
-}
-
-const clearBuild = () => {
-  buildItems.value = []
-  compatibilityResult.value = null
-}
-
-const isInBuild = (category) => {
-  return buildItems.value.some(x => x.category === category)
-}
-
-/* ================= COMPUTED ================= */
-const totalPrice = computed(() =>
-  buildItems.value.reduce((s, i) => s + (i.price || 0), 0)
-)
-
-const estimatedPower = computed(() =>
-  buildItems.value.reduce((s, i) => s + (i.powerConsumption || 0), 0)
-)
-
-/* ================= API ================= */
-const checkCompatibility = async () => {
-  if (!buildItems.value.length) return
-
-  checking.value = true
-
-  try {
-    const ids = buildItems.value.map(x => x.id)
-
-    const res = await api.post('/components/check-compatibility', {
-      componentIds: ids
-    })
-
-    compatibilityResult.value = res.data
-
-  } catch (e) {
-    console.error(e)
-  } finally {
-    checking.value = false
-  }
-}
-
-const saveBuild = async () => {
-  if (!buildItems.value.length) return
-
-  saving.value = true
-
-  try {
-    await api.post('/builds', {
-      componentsJson: JSON.stringify(buildItems.value),
-      totalPrice: totalPrice.value,
-      currency: currency.value,
-      isCompatible: compatibilityResult.value?.isCompatible || false
-    })
-
-    alert('Сборка сохранена')
-
-  } catch (e) {
-    console.error(e)
-    alert('Ошибка сохранения')
-  } finally {
-    saving.value = false
-  }
-}
-
-/* ================= UI ================= */
 const selectCategory = (cat) => {
   selectedCategory.value = cat
   fetchComponents()
@@ -284,6 +185,5 @@ const logout = () => {
   router.push('/')
 }
 
-/* ================= INIT ================= */
 onMounted(fetchComponents)
 </script>

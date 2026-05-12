@@ -59,6 +59,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import api from '@/api'
+import { mapComponent } from '@/utils/mapper'
 
 const route = useRoute()
 const router = useRouter()
@@ -85,7 +86,9 @@ const loadComponent = async () => {
   try {
     const id = route.params.id
     const res = await api.get(`/components/${id}`)
-    component.value = res.data
+
+    component.value = mapComponent(res.data)
+
   } catch (e) {
     error.value = 'Ошибка загрузки компонента'
   } finally {
@@ -94,8 +97,7 @@ const loadComponent = async () => {
 }
 
 const logout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
+  localStorage.clear()
   router.push('/')
 }
 

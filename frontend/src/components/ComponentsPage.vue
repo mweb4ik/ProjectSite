@@ -58,13 +58,13 @@
     </main>
   </div>
 </template>
-
 <script setup>
 import '@/assets/styles/pages/ComponentsPage.css'
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import api from '@/api'
+import { mapComponent } from '@/utils/mapper'
 
 const route = useRoute()
 const router = useRouter()
@@ -90,7 +90,7 @@ const fetchComponents = async () => {
   try {
     const params = {}
 
-    if (currentCategory.value && currentCategory.value !== 'all') {
+    if (currentCategory.value !== 'all') {
       params.category = currentCategory.value
     }
 
@@ -99,9 +99,12 @@ const fetchComponents = async () => {
     }
 
     const res = await api.get('/components', { params })
-    components.value = res.data
+
+    components.value = (res.data || []).map(mapComponent)
+
   } catch (e) {
     console.error('Ошибка:', e)
+    components.value = []
   } finally {
     loading.value = false
   }
@@ -110,21 +113,20 @@ const fetchComponents = async () => {
 let timeout = null
 const handleSearch = () => {
   clearTimeout(timeout)
-  timeout = setTimeout(fetchComponents, 400)
+  timeout = setTimeout(fetchComponents, 300)
 }
 
 const selectComponent = (item) => {
-  router.push(`/components-details/${item.Id}`)
+  router.push(`/components-details/${item.id}`)
 }
 
 const formatCategoryTitle = (cat) => {
   if (!cat || cat === 'all') return 'Все компоненты'
-  return cat.charAt(0).toUpperCase() + cat.slice(1)
+  return cat.toUpperCase()
 }
 
 const logout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
+  localStorage.clear()
   router.push('/')
 }
 
