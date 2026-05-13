@@ -14,11 +14,13 @@ public class QuizController : ControllerBase{
     {
         _db = db;
     }
-//Получение вопросов
+//Получение вопросов со случайной сортировкой
 [HttpGet]
 public async Task<IActionResult> GetQuestions()
 {
-    var questions = await _db.QuizQuestions.ToListAsync();
+    var questions = await _db.QuizQuestions
+        .OrderBy(q => Guid.NewGuid())
+        .ToListAsync();
     return Ok(questions);
 }
 

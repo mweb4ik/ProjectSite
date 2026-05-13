@@ -69,6 +69,7 @@
 </template>
 
 <script setup>
+// Загрузка стилей страницы компонентов
 import '@/assets/styles/pages/ComponentsPage.css'
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -79,6 +80,7 @@ import { mapComponent } from '@/utils/mapper'
 const route = useRoute()
 const router = useRouter()
 
+// Данные пользователя из localStorage
 const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
 
 const components = ref([])
@@ -89,16 +91,19 @@ const currentCategory = ref('all')
 
 let timeout = null
 
+// Формирование URL изображения компонента
 const getImageUrl = (path) => {
   if (!path) return ''
   const base = api.defaults.baseURL?.replace('/api', '') || ''
   return `${base}/${path.replace(/^\/+/, '').replace('wwwroot/', '')}`
 }
 
+// Обработка ошибок загрузки изображений
 const onImageError = (e) => {
   e.target.style.display = 'none'
 }
 
+// Получение списка компонентов с сервера
 const fetchComponents = async () => {
   loading.value = true
 
@@ -125,20 +130,24 @@ const fetchComponents = async () => {
   }
 }
 
+// Обработка ввода в поиске с задержкой
 const handleSearch = () => {
   clearTimeout(timeout)
   timeout = setTimeout(fetchComponents, 300)
 }
 
+// Переход на страницу деталей компонента
 const selectComponent = (item) => {
   router.push(`/components-details/${item.id}`)
 }
 
+// Форматирование названия категории
 const formatCategoryTitle = (cat) => {
   if (!cat || cat === 'all') return 'Все компоненты'
   return cat.charAt(0).toUpperCase() + cat.slice(1)
 }
 
+// Выход из аккаунта с очисткой localStorage
 const logout = () => {
   localStorage.clear()
   router.push('/')
