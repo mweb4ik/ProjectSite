@@ -1,13 +1,14 @@
 export function mapComponent(c) {
   return {
-    id: c.id ?? c.Id,
-    name: c.name ?? c.Name,
-    category: c.category ?? c.Category,
-    price: c.price ?? c.Price,
-    currency: c.currency ?? c.Currency,
-    specifications: c.specifications ?? c.Specifications,
-    socket: c.socket ?? c.Socket,
-    powerConsumption: c.powerConsumption ?? c.PowerConsumption,
-    imageUrl: c.imageUrl ?? c.ImageUrl
+    id: c.Id ?? c.id,
+    name: c.Name ?? c.name,
+    category: c.Category ?? c.category,
+    price: c.Price ?? c.price,
+    currency: c.Currency ?? c.currency,
+    specifications: c.Specifications ?? c.specifications,
+    socket: c.Socket ?? c.socket,
+    powerConsumption: c.PowerConsumption ?? c.powerConsumption,
+    imageUrl: c.ImageUrl ?? c.imageUrl
   }
 }
+

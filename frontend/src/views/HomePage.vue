@@ -89,4 +89,4 @@ const goTo = (page) => {
   const componentPages = ['videocard', 'processor', 'motherboard', 'cooling', 'ram', 'storage'];
   router.push(componentPages.includes(page) ? `/component/${page}` : `/${page}`);
 };
-</script>
+</script> 

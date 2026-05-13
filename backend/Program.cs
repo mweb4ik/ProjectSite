@@ -89,21 +89,132 @@ async Task InitializeDatabaseAsync(WebApplication app)
     
     db.Database.EnsureCreated();
     
-    // 🔹 Components
+    // 🔹 Components с описанием взаимодействия
     if (!await db.Components.AnyAsync())
     {
         Console.WriteLine("[DB] Seeding components...");
         db.Components.AddRange(
-            new Component { Id = "cpu-intel-1", Name = "Intel Core i9-13900K", Category = ComponentCategory.Processor, Price = 580, Currency = "$", Specifications = "LGA1700, 24 cores, 32 threads", Socket = "LGA1700", PowerConsumption = 253, ImageUrl = "/images/IntelCorei9-13-900K.png" },
-            new Component { Id = "mobo-intel-1", Name = "ASUS ROG Maximus Z790 Hero", Category = ComponentCategory.Motherboard, Price = 600, Currency = "$", Specifications = "ATX, DDR5, LGA1700", Socket = "LGA1700", ImageUrl = "/images/ASUS-ROG-Maximus-Z790-Hero.png" },
-            new Component { Id = "cpu-amd-1", Name = "AMD Ryzen 9 7950X", Category = ComponentCategory.Processor, Price = 550, Currency = "$", Specifications = "AM5, 16 cores", Socket = "AM5", PowerConsumption = 170, ImageUrl = "/images/Ryzen_9_3950X_4.jpg" },
-            new Component { Id = "mobo-amd-1", Name = "Gigabyte X670 Aorus Elite", Category = ComponentCategory.Motherboard, Price = 300, Currency = "$", Specifications = "ATX, DDR5, AM5", Socket = "AM5", ImageUrl = "/images/Gigabyte-X670-Aorus-Elite.jpg" },
-            new Component { Id = "ram-ddr5-1", Name = "Kingston Fury Beast 32GB DDR5", Category = ComponentCategory.Ram, Price = 140, Currency = "$", Specifications = "DDR5 6000MHz", ImageUrl = "/images/Kingston-FuryBeast-32GB-DDR5.png" },
-            new Component { Id = "ram-ddr4-1", Name = "Corsair Vengeance 32GB DDR4", Category = ComponentCategory.Ram, Price = 90, Currency = "$", Specifications = "DDR4 3200MHz", ImageUrl = "/images/Corsair-Vengeance-32GB-DDR4.png" },
-            new Component { Id = "gpu-nvidia-1", Name = "NVIDIA GeForce RTX 4090", Category = ComponentCategory.Videocard, Price = 1600, Currency = "$", Specifications = "24GB GDDR6X", PowerConsumption = 450, ImageUrl = "/images/NVIDIA-GeForce-RTX-4090.png" },
-            new Component { Id = "gpu-amd-1", Name = "AMD Radeon RX 7900 XTX", Category = ComponentCategory.Videocard, Price = 900, Currency = "$", Specifications = "24GB GDDR6", PowerConsumption = 355, ImageUrl = "/images/AMD-Radeon-RX7900-XTX.png" },
-            new Component { Id = "storage-1", Name = "Samsung 980 PRO 1TB", Category = ComponentCategory.Storage, Price = 100, Currency = "$", Specifications = "NVMe M.2 SSD", ImageUrl = "/images/Samsung-980-PRO-1TB.png" },
-            new Component { Id = "cooling-1", Name = "DeepCool AK620", Category = ComponentCategory.Cooling, Price = 65, Currency = "$", Specifications = "Air Cooler, 260W TDP", ImageUrl = "/images/DeepCool-620AK.png" }
+            // === PROCESSOR (CPU) ===
+            new Component { 
+                Id = "cpu-intel-1", 
+                Name = "Intel Core i9-13900K", 
+                Category = ComponentCategory.Processor, 
+                Price = 580, 
+                Currency = "$", 
+                Specifications = "LGA1700, 24 cores (8P+16E), 32 threads, до 5.8 GHz. Взаимодействует с материнской платой через сокет LGA1700, требует совместимого чипсета Z690/Z790. Работает с DDR4/DDR5 памятью через контроллер памяти на материнской плате. Интегрированная графика UHD 770 может работать без дискретной видеокарты.", 
+                Socket = "LGA1700", 
+                PowerConsumption = 253, 
+                ImageUrl = "/images/IntelCorei9-13-900K.png" 
+            },
+            new Component { 
+                Id = "cpu-amd-1", 
+                Name = "AMD Ryzen 9 7950X", 
+                Category = ComponentCategory.Processor, 
+                Price = 550, 
+                Currency = "$", 
+                Specifications = "AM5, 16 cores, 32 threads, до 5.7 GHz. Взаимодействует с материнской платой через сокет AM5, требует чипсета X670/B650. Поддерживает только DDR5 память. Не имеет интегрированной графики (требуется дискретная видеокарта).", 
+                Socket = "AM5", 
+                PowerConsumption = 170, 
+                ImageUrl = "/images/Ryzen_9_3950X_4.jpg" 
+            },
+            
+            // === MOTHERBOARD ===
+            new Component { 
+                Id = "mobo-intel-1", 
+                Name = "ASUS ROG Maximus Z790 Hero", 
+                Category = ComponentCategory.Motherboard, 
+                Price = 600, 
+                Currency = "$", 
+                Specifications = "ATX, LGA1700, чипсет Z790, 4 слота DDR5 (до 128GB, 7000+ MHz), 2x PCIe 5.0 x16 для GPU, 5x M.2 NVMe для накопителей. Взаимодействует: CPU через сокет LGA1700, RAM через слоты DDR5, GPU через PCIe x16, накопители через M.2/SATA, БП через 24-pin + 8-pin EPS.", 
+                Socket = "LGA1700", 
+                PowerConsumption = 50, 
+                ImageUrl = "/images/ASUS-ROG-Maximus-Z790-Hero.png" 
+            },
+            new Component { 
+                Id = "mobo-amd-1", 
+                Name = "Gigabyte X670 Aorus Elite", 
+                Category = ComponentCategory.Motherboard, 
+                Price = 300, 
+                Currency = "$", 
+                Specifications = "ATX, AM5, чипсет X670, 4 слота DDR5 (до 128GB, 6666+ MHz), 2x PCIe 4.0/5.0 x16 для GPU, 4x M.2 NVMe. Взаимодействует: CPU через сокет AM5, RAM через слоты DDR5, GPU через PCIe x16, накопители через M.2/SATA.", 
+                Socket = "AM5", 
+                PowerConsumption = 45, 
+                ImageUrl = "/images/Gigabyte-X670-Aorus-Elite.jpg" 
+            },
+            
+            // === RAM (ОЗУ) ===
+            new Component { 
+                Id = "ram-ddr5-1", 
+                Name = "Kingston Fury Beast 32GB DDR5", 
+                Category = ComponentCategory.Ram, 
+                Price = 140, 
+                Currency = "$", 
+                Specifications = "DDR5-6000, 32GB (2x16GB), CL36, 1.35V. Взаимодействует с материнской платой через слоты DDR5 (не совместима с DDR4). Процессор получает данные от RAM через контроллер памяти на материнской плате. Двухканальный режим повышает пропускную способность.", 
+                Socket = "", 
+                PowerConsumption = 10, 
+                ImageUrl = "/images/Kingston-FuryBeast-32GB-DDR5.png" 
+            },
+            new Component { 
+                Id = "ram-ddr4-1", 
+                Name = "Corsair Vengeance 32GB DDR4", 
+                Category = ComponentCategory.Ram, 
+                Price = 90, 
+                Currency = "$", 
+                Specifications = "DDR4-3200, 32GB (2x16GB), CL16, 1.35V. Взаимодействует с материнской платой через слоты DDR4 (не совместима с DDR5). Требует материнскую плату с поддержкой DDR4.", 
+                Socket = "", 
+                PowerConsumption = 8, 
+                ImageUrl = "/images/Corsair-Vengeance-32GB-DDR4.png" 
+            },
+            
+            // === VIDEOCARD (GPU) ===
+            new Component { 
+                Id = "gpu-nvidia-1", 
+                Name = "NVIDIA GeForce RTX 4090", 
+                Category = ComponentCategory.Videocard, 
+                Price = 1600, 
+                Currency = "$", 
+                Specifications = "24GB GDDR6X, 16384 CUDA ядер, boost до 2.52 GHz. Взаимодействует с материнской платой через PCIe x16 слот, требует 3x 8-pin или 1x 16-pin (12VHPWR) питание от БП. Выводит изображение через DisplayPort/HDMI на монитор. Требует БП от 850W.", 
+                Socket = "", 
+                PowerConsumption = 450, 
+                ImageUrl = "/images/NVIDIA-GeForce-RTX-4090.png" 
+            },
+            new Component { 
+                Id = "gpu-amd-1", 
+                Name = "AMD Radeon RX 7900 XTX", 
+                Category = ComponentCategory.Videocard, 
+                Price = 900, 
+                Currency = "$", 
+                Specifications = "24GB GDDR6, 6144 потоковых процессоров, boost до 2.5 GHz. Взаимодействует через PCIe x16, требует 2x 8-pin питание от БП. Поддержка DisplayPort 2.1 и HDMI 2.1. Требует БП от 750W.", 
+                Socket = "", 
+                PowerConsumption = 355, 
+                ImageUrl = "/images/AMD-Radeon-RX7900-XTX.png" 
+            },
+            
+            // === STORAGE (Накопитель) ===
+            new Component { 
+                Id = "storage-1", 
+                Name = "Samsung 980 PRO 1TB", 
+                Category = ComponentCategory.Storage, 
+                Price = 100, 
+                Currency = "$", 
+                Specifications = "NVMe M.2 2280, PCIe 4.0 x4, чтение до 7000 MB/s, запись до 5100 MB/s. Взаимодействует с материнской платой через M.2 слот (ключ M), подключается напрямую к CPU или чипсету. Требует поддержки NVMe в BIOS/UEFI.", 
+                Socket = "", 
+                PowerConsumption = 7, 
+                ImageUrl = "/images/Samsung-980-PRO-1TB.png" 
+            },
+            
+            // === COOLING (Охлаждение) ===
+            new Component { 
+                Id = "cooling-1", 
+                Name = "DeepCool AK620", 
+                Category = ComponentCategory.Cooling, 
+                Price = 65, 
+                Currency = "$", 
+                Specifications = "Башенный кулер, 2 вентилятора 120mm, TDP 260W. Взаимодействует с CPU через крепление на сокет (LGA1700/AM5 в комплекте). Отводит тепло от процессора через тепловые трубки к радиатору. Требует совместимого крепления и достаточного пространства в корпусе.", 
+                Socket = "", 
+                PowerConsumption = 5, 
+                ImageUrl = "/images/DeepCool-620AK.png" 
+            }
         );
         await db.SaveChangesAsync();
     }

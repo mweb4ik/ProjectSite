@@ -16,18 +16,21 @@
       </div>
 
       <div v-if="loading" class="loader">Загрузка...</div>
-      <div v-else-if="components.length === 0" class="empty-state">Ничего не найдено</div>
+
+      <div v-else-if="components.length === 0" class="empty-state">
+        Ничего не найдено
+      </div>
 
       <div v-else class="components-grid">
         <div
           v-for="item in components"
-          :key="item.Id"
+          :key="item.id"
           class="component-card"
         >
           <div class="card-image-box">
             <img
-              :src="getImageUrl(item.ImageUrl)"
-              :alt="item.Name"
+              :src="getImageUrl(item.imageUrl)"
+              :alt="item.name"
               class="card-img"
               @error="onImageError"
             />
@@ -35,17 +38,23 @@
 
           <div class="card-content">
             <div class="card-header">
-              <span class="badge">{{ item.Category }}</span>
-              <span class="price">{{ item.Price }} {{ item.Currency }}</span>
+              <span class="badge">{{ item.category }}</span>
+              <span class="price">
+                {{ item.price }} {{ item.currency }}
+              </span>
             </div>
 
-            <h3 class="card-title">{{ item.Name }}</h3>
+            <h3 class="card-title">{{ item.name }}</h3>
 
             <div class="card-specs">
-              <p><strong>Хар-ки:</strong> {{ item.Specifications }}</p>
-              <p v-if="item.Socket"><strong>Сокет:</strong> {{ item.Socket }}</p>
-              <p v-if="item.PowerConsumption">
-                <strong>Вт:</strong> {{ item.PowerConsumption }}
+              <p><strong>Характеристики:</strong> {{ item.specifications }}</p>
+
+              <p v-if="item.socket">
+                <strong>Сокет:</strong> {{ item.socket }}
+              </p>
+
+              <p v-if="item.powerConsumption">
+                <strong>Вт:</strong> {{ item.powerConsumption }}
               </p>
             </div>
 
@@ -58,6 +67,7 @@
     </main>
   </div>
 </template>
+
 <script setup>
 import '@/assets/styles/pages/ComponentsPage.css'
 import { ref, onMounted, watch } from 'vue'
@@ -89,18 +99,17 @@ const onImageError = (e) => {
   e.target.style.display = 'none'
 }
 
-/* ================= LOAD ================= */
 const fetchComponents = async () => {
   loading.value = true
 
   try {
     const params = {}
 
-    if (currentCategory.value && currentCategory.value !== 'all') {
+    if (currentCategory.value !== 'all') {
       params.category = currentCategory.value
     }
 
-    if (searchQuery.value?.trim()) {
+    if (searchQuery.value.trim()) {
       params.name = searchQuery.value.trim()
     }
 
@@ -109,26 +118,20 @@ const fetchComponents = async () => {
     components.value = (res.data || []).map(mapComponent)
 
   } catch (e) {
-    console.error('Components load error:', e)
+    console.error(e)
     components.value = []
   } finally {
     loading.value = false
   }
 }
 
-/* ================= SEARCH ================= */
 const handleSearch = () => {
   clearTimeout(timeout)
-  timeout = setTimeout(() => {
-    fetchComponents()
-  }, 350)
+  timeout = setTimeout(fetchComponents, 300)
 }
 
-/* ================= NAV ================= */
 const selectComponent = (item) => {
-  const id = item?.id || item?.Id
-  if (!id) return
-  router.push(`/components-details/${id}`)
+  router.push(`/components-details/${item.id}`)
 }
 
 const formatCategoryTitle = (cat) => {
@@ -141,7 +144,6 @@ const logout = () => {
   router.push('/')
 }
 
-/* ================= INIT ================= */
 onMounted(() => {
   currentCategory.value = route.params.type || 'all'
   fetchComponents()

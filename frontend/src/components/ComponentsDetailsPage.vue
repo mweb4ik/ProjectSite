@@ -3,7 +3,9 @@
     <AppHeader :user="user" @logout="logout" />
 
     <main class="content">
-      <button @click="router.back()" class="btn-back">← Назад</button>
+      <button @click="router.back()" class="btn-back">
+        ← Назад
+      </button>
 
       <div v-if="loading">Загрузка...</div>
       <div v-else-if="error">{{ error }}</div>
@@ -11,14 +13,12 @@
       <div v-else-if="component" class="product-card">
 
         <div class="card-header">
-          <span class="badge">
-            {{ component.Category }}
-          </span>
+          <span class="badge">{{ component.category }}</span>
 
-          <h1>{{ component.Name }}</h1>
+          <h1>{{ component.name }}</h1>
 
           <div class="price">
-            {{ component.Price }} {{ component.Currency }}
+            {{ component.price }} {{ component.currency }}
           </div>
         </div>
 
@@ -26,24 +26,23 @@
 
           <div class="image-wrapper">
             <img
-              :src="getImageUrl(component.ImageUrl)"
-              :alt="component.Name"
+              :src="getImageUrl(component.imageUrl)"
+              :alt="component.name"
               @error="onImageError"
             />
           </div>
 
           <div class="specs">
+            <p><strong>Описание:</strong> {{ component.specifications }}</p>
 
-            <p><strong>Описание:</strong> {{ component.Specifications }}</p>
-
-            <p v-if="component.Socket">
-              <strong>Сокет:</strong> {{ component.Socket }}
+            <p v-if="component.socket">
+              <strong>Сокет:</strong> {{ component.socket }}
             </p>
 
-            <p v-if="component.PowerConsumption">
-              <strong>Потребление:</strong> {{ component.PowerConsumption }} Вт
+            <p v-if="component.powerConsumption">
+              <strong>Потребление:</strong>
+              {{ component.powerConsumption }} Вт
             </p>
-
           </div>
 
         </div>
