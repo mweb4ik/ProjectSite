@@ -194,11 +194,11 @@ export default {
       this.loading = true
 
       try {
-   
+        // Загружаем данные текущего пользователя
         const me = await api.get('/auth/me')
         this.user = me.data
 
-        
+        // Загружаем результаты квизов
         try {
           const quizRes = await api.get('/quiz/results')
           this.quizResults = quizRes.data || []
@@ -206,24 +206,39 @@ export default {
           console.warn('Quiz error', e)
         }
 
-      
-        const viewed = localStorage.getItem('viewed_components')
-        if (viewed) {
-          this.viewedComponents = JSON.parse(viewed)
-        }
-
-    
+        // Загружаем статистику просмотров компонентов с сервера
         try {
-          const compRes = await api.get('/components')
-          this.totalComponents = compRes.data.length || 0
+          const statsRes = await api.get('/user-stats/profile-stats')
+          this.viewedComponents = statsRes.data.viewedComponents || []
+          this.totalComponents = statsRes.data.totalComponents || 0
+          
+          // Если есть данные о просмотренных компонентах, загружаем их детали
+          if (statsRes.data.viewedComponentIds && statsRes.data.viewedComponentIds.length > 0) {
+            const componentsRes = await api.get('/components')
+            const allComponents = componentsRes.data || []
+            this.viewedComponents = allComponents.filter(c => 
+              statsRes.data.viewedComponentIds.includes(c.Id)
+            )
+          }
         } catch (e) {
-          console.warn('Components error', e)
+          console.warn('User stats error', e)
+          
+          // Fallback к localStorage
+          const viewed = localStorage.getItem('viewed_components')
+          if (viewed) {
+            this.viewedComponents = JSON.parse(viewed)
+          }
+          
+          try {
+            const compRes = await api.get('/components')
+            this.totalComponents = compRes.data.length || 0
+          } catch (ce) {
+            console.warn('Components error', ce)
+          }
         }
 
       } catch (err) {
         console.error('Auth error:', err)
-
-    
         this.logout()
       } finally {
         this.loading = false

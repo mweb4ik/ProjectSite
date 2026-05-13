@@ -80,6 +80,18 @@ const onImageError = (e) => {
   e.target.style.display = 'none'
 }
 
+const trackComponentView = async (componentId) => {
+  const token = localStorage.getItem('token')
+  if (!token) return
+  
+  try {
+    await api.post('/user-stats/track-component', componentId)
+    console.log('[DETAILS] Компонент отмечен как просмотренный:', componentId)
+  } catch (e) {
+    console.warn('[DETAILS] Ошибка отслеживания просмотра:', e)
+  }
+}
+
 const loadComponent = async () => {
   loading.value = true
   error.value = null
@@ -89,6 +101,9 @@ const loadComponent = async () => {
     const res = await api.get(`/components/${id}`)
 
     component.value = mapComponent(res.data)
+    
+    // Отмечаем компонент как просмотренный
+    await trackComponentView(id)
 
   } catch (e) {
     console.error(e)

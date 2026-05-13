@@ -51,11 +51,14 @@ public class UserStatsController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var viewed = await _db.ComponentViews
+        // Получаем список ID просмотренных компонентов
+        var viewedComponentIds = await _db.ComponentViews
             .Where(v => v.UserId == userId)
             .Select(v => v.ComponentId)
             .Distinct()
-            .CountAsync();
+            .ToListAsync();
+
+        var viewed = viewedComponentIds.Count;
 
         var totalComponents = await _db.Components.CountAsync();
 
@@ -65,7 +68,8 @@ public class UserStatsController : ControllerBase
 
         return Ok(new
         {
-            viewedComponents = viewed,
+            viewedComponentIds,  // Возвращаем ID для последующей загрузки деталей
+            viewedComponents = viewed,  // Оставляем для обратной совместимости как количество
             totalComponents,
             progress = totalComponents == 0 ? 0 : (viewed * 100 / totalComponents),
 
