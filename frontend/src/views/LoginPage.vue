@@ -30,7 +30,7 @@
       </button>
       <p class="switch-link">Нет аккаунта? <a @click="switchTo('register')">Зарегистрироваться</a></p>
       <button class="btn btn-ghost" @click="closeAuth">← Назад</button>
-      <button class="btn btn-ghost" @click="goToForgot">Забыли пароль?</button>
+      <button class="btn-btn ghost " @click="goToForgot">Забыли пароль?</button>
     </div>
 
     <div v-if="showRegister" class="auth-card">
@@ -66,7 +66,6 @@
 <script>
 import { api } from '@/api';
 import '@/assets/styles/pages/auth.css'
-
 export default {
   name: 'LoginPage',
   data() {
@@ -76,99 +75,22 @@ export default {
       loading: false,
       error: '',
       form: { Username: '', Login: '', Email: '', Password: '', ConfirmPassword: '' },
-      currentUser: null,
-      isRefreshing: false 
+      currentUser: null
     };
   },
   mounted() {
-    const token = localStorage.getItem('accessToken');
-    const user = localStorage.getItem('user');
+  const user = localStorage.getItem('user');
 
-    if (user && token) {
-      try {
-        this.currentUser = JSON.parse(user);
-        this.verifyToken();
-      } catch {
-        this.clearAuth();
-      }
+  if (user) {
+    try {
+      this.currentUser = JSON.parse(user);
+      this.$router.push('/home');
+    } catch {
+      localStorage.clear();
     }
-  },
+  }
+},
   methods: {
-    clearAuth() {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-      this.currentUser = null;
-    },
-
-    getAuthHeader() {
-      const token = localStorage.getItem('accessToken');
-      return token ? { Authorization: `Bearer ${token}` } : {};
-    },
-
-    async refreshAccessToken() {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (!refreshToken) return false;
-
-      try {
-        const res = await api.post('/auth/refresh', { refreshToken });
-        
-        localStorage.setItem('accessToken', res.data.accessToken);
-        localStorage.setItem('refreshToken', res.data.refreshToken);
-        
-        if (res.data.username) {
-          this.currentUser = {
-            Username: res.data.username,
-            Email: res.data.email,
-            Role: res.data.role
-          };
-          localStorage.setItem('user', JSON.stringify(this.currentUser));
-        }
-        
-        return true;
-      } catch (err) {
-        console.error('Refresh failed:', err);
-        this.clearAuth();
-        this.$router.push('/'); 
-        return false;
-      }
-    },
-
-
-    async apiCall(endpoint, method = 'get', data = null) {
-      // Первый попытка
-      try {
-        const config = {
-          method,
-          url: endpoint,
-          headers: this.getAuthHeader(),
-          data
-        };
-        const res = await api.request(config);
-        return res.data;
-      } catch (err) {
-        // Если 401 — рефреш
-        if (err.response?.status === 401 && !this.isRefreshing) {
-          this.isRefreshing = true;
-          
-          const refreshed = await this.refreshAccessToken();
-          this.isRefreshing = false;
-          
-          if (refreshed) {
-            const config = {
-              method,
-              url: endpoint,
-              headers: this.getAuthHeader(),
-              data
-            };
-            const res = await api.request(config);
-            return res.data;
-          }
-        }
-        throw err;
-      }
-    },
-
     switchTo(page) {
       this.error = '';
       this.form = { Username: '', Login: '', Email: '', Password: '', ConfirmPassword: '' };
@@ -186,7 +108,6 @@ export default {
       this.showRegister = false;
       this.$router.push('/forgot-password');
     },
-
     async submitLogin() {
       if (this.loading) return;
       if (!this.form.Login || !this.form.Password) {
@@ -200,20 +121,12 @@ export default {
           Login: this.form.Login,
           Password: this.form.Password
         });
-        
-        localStorage.setItem('accessToken', res.data.accessToken);
-        localStorage.setItem('refreshToken', res.data.refreshToken);
+        localStorage.setItem('token', res.data.Token);
         localStorage.setItem('user', JSON.stringify({
-          Username: res.data.username,
-          Email: res.data.email,
-          Role: res.data.role
+          Username: res.data.Username,
+          Email: res.data.Email,
+          Role: res.data.Role
         }));
-        this.currentUser = {
-          Username: res.data.username,
-          Email: res.data.email,
-          Role: res.data.role
-        };
-        
         this.$router.push('/home');
       } catch (err) {
         this.error = err.response?.data?.message || 'Ошибка входа';
@@ -221,7 +134,6 @@ export default {
         this.loading = false;
       }
     },
-
     async submitRegister() {
       this.loading = true;
       this.error = '';
@@ -240,20 +152,12 @@ export default {
           Email: this.form.Email,
           Password: this.form.Password
         });
-        
-        localStorage.setItem('accessToken', res.data.accessToken);
-        localStorage.setItem('refreshToken', res.data.refreshToken);
+        localStorage.setItem('token', res.data.Token);
         localStorage.setItem('user', JSON.stringify({
-          Username: res.data.username,
-          Email: res.data.email,
-          Role: res.data.role || 'standard'
+          Username: res.data.Username,
+          Email: res.data.Email,
+          Role: res.data.Role || 'standard'
         }));
-        this.currentUser = {
-          Username: res.data.username,
-          Email: res.data.email,
-          Role: res.data.role || 'standard'
-        };
-        
         this.$router.push('/home');
       } catch (err) {
         this.error = err.response?.data?.message || 'Ошибка регистрации';
@@ -261,27 +165,12 @@ export default {
         this.loading = false;
       }
     },
-
     enterAsGuest() {
       const guestUser = { Username: 'Guest', Email: 'guest@local', Role: 'guest' };
       localStorage.setItem('user', JSON.stringify(guestUser));
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      this.currentUser = guestUser;
+      localStorage.removeItem('token');
       this.$router.push('/home');
     },
-
-    async logout() {
-      try {
-        await api.post('/auth/logout', null, { headers: this.getAuthHeader() });
-      } catch (e) {
-        console.warn('Logout error (ignored):', e);
-      } finally {
-        this.clearAuth();
-        this.$router.push('/');
-      }
-    },
-
     validatePassword() {
       const p = this.form.Password;
       const cp = this.form.ConfirmPassword;
