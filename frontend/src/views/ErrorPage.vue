@@ -1,38 +1,55 @@
 <template>
-    <div class="error-container">
-      <div class="error-box">
-        <h1 class="error-code">404</h1>
-        <p class="error-title">Страница не найдена</p>
-        <p class="error-subtitle">
-          Похоже, вы забрели не туда...
-        </p>
+  <div class="error-container">
+    <div class="error-box">
+      <h1 class="error-code">404</h1>
+      <p class="error-title">Страница не найдена</p>
+      <p class="error-subtitle">
+        Похоже, вы забрели не туда...
+      </p>
 
-        <div class="emoji">💻⚠️</div>
+      <div class="emoji">💻⚠️</div>
 
-        <button class="btn-home" @click="goHome">
-          Вернуться на главную
-        </button>
-      </div>
+      <button class="btn-home" @click="goHome">
+        Вернуться на главную
+      </button>
     </div>
-  </template>
+  </div>
+</template>
 
-  <script>
-  import { useRouter } from 'vue-router'
-  import '@/assets/styles/pages/ErrorPage.css'
-  export default {
-    name: 'ErrorPage',
-    setup() {
-      const router = useRouter()
+<script>
+import { useRouter } from 'vue-router'
+import { onMounted, onUnmounted } from 'vue'
+import '@/assets/styles/pages/ErrorPage.css'
 
-      const goHome = () => {
-        router.push('/')
+export default {
+  name: 'ErrorPage',
+  setup() {
+    const router = useRouter()
+    let redirectTimer = null 
+
+    const goHome = () => {
+
+      if (redirectTimer) {
+        clearTimeout(redirectTimer)
+        redirectTimer = null
       }
-      setTimeout(() => {
-    router.push('/')
-  }, 5000)
-      return { goHome }
+      router.push('/')
     }
-  }
-  </script>
 
-  
+    onMounted(() => {
+      redirectTimer = setTimeout(() => {
+        router.replace('/') 
+      }, 5000)
+    })
+
+    onUnmounted(() => {
+      if (redirectTimer) {
+        clearTimeout(redirectTimer)
+        redirectTimer = null
+      }
+    })
+
+    return { goHome }
+  }
+}
+</script>
