@@ -84,7 +84,7 @@ export default {
     const token = localStorage.getItem('accessToken');
     const user = localStorage.getItem('user');
 
-    if (user) {
+    if (user && token) {
       try {
         this.currentUser = JSON.parse(user);
         this.verifyToken();
