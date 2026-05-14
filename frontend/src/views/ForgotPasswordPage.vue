@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+        <AppHeader :user="user" @logout="logout" />
     <header class="header">
       <h1 class="highlight">Восстановление пароля</h1>
     </header>

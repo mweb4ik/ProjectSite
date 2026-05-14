@@ -229,17 +229,404 @@ async Task InitializeDatabaseAsync(WebApplication app)
         await db.SaveChangesAsync();
     }
 
-    // 🔹 Quiz Questions
-    if (!await db.QuizQuestions.AnyAsync())
-    {
-        db.QuizQuestions.AddRange(
-            new QuizQuestion { Question = "Какой сокет у Intel i9-13900K?", Options = new[] { "AM4", "LGA1700", "AM5", "LGA1200" }, CorrectOptionIndex = 1, Difficulty = "easy" },
-            new QuizQuestion { Question = "Что важнее для стабильного разгона?", Options = new[] { "RGB подсветка", "Напряжение", "Цвет корпуса", "SSD" }, CorrectOptionIndex = 1, Difficulty = "medium" },
-            new QuizQuestion { Question = "Что произойдет при слишком высоком напряжении?", Options = new[] { "Улучшится FPS", "Снизится температура", "Повреждение CPU", "Ничего" }, CorrectOptionIndex = 2, Difficulty = "hard" },
-            new QuizQuestion { Question = "Какой тип памяти у современных систем?", Options = new[] { "DDR3", "DDR4/DDR5", "SDRAM", "GDDR3" }, CorrectOptionIndex = 1, Difficulty = "easy" }
-        );
-        await db.SaveChangesAsync();
-    }
+    // 🔹 Quiz Questions — 40 вопросов по теме "Устройство ПК"
+if (!await db.QuizQuestions.AnyAsync())
+{
+    db.QuizQuestions.AddRange(
+        // === CPU / ПРОЦЕССОРЫ (7 вопросов) ===
+        new QuizQuestion { 
+            Question = "Какой сокет используется у процессоров Intel Core 12-14 поколения?", 
+            Options = new[] { "AM4", "LGA1700", "AM5", "LGA1200" }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Что означает аббревиатура TDP у процессора?", 
+            Options = new[] { 
+                "Total Data Processing", 
+                "Thermal Design Power", 
+                "Turbo Dynamic Performance", 
+                "Technical Data Package" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Какой параметр процессора напрямую влияет на многозадачность?", 
+            Options = new[] { "Тактовая частота", "Количество ядер и потоков", "Объём кэша L1", "TDP" }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Что такое гиперпоточность (Hyper-Threading)?", 
+            Options = new[] { 
+                "Увеличение тактовой частоты", 
+                "Технология, позволяющая одному ядру обрабатывать два потока", 
+                "Автоматический разгон процессора", 
+                "Снижение энергопотребления" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Какой бренд процессоров использует сокет AM5?", 
+            Options = new[] { "Intel", "AMD", "Apple", "Qualcomm" }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Что произойдёт, если установить процессор с неподходящим сокетом?", 
+            Options = new[] { 
+                "Он будет работать на пониженной частоте", 
+                "Физически не установится или повредится", 
+                "Система автоматически подберёт драйверы", 
+                "Ничего, все сокеты универсальны" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Какой параметр важнее для игр: высокая частота или много ядер?", 
+            Options = new[] { 
+                "Только много ядер", 
+                "Только высокая частота", 
+                "Баланс: частота важнее, но 6+ ядер желательно", 
+                "Ни то, ни другое — важна только видеокарта" 
+            }, 
+            CorrectOptionIndex = 2, 
+            Difficulty = "medium" 
+        },
+
+        // === MOTHERBOARD / МАТЕРИНСКАЯ ПЛАТА (6 вопросов) ===
+        new QuizQuestion { 
+            Question = "Какой чипсет Intel поддерживает разгон процессоров серии K?", 
+            Options = new[] { "B760", "H770", "Z790", "H610" }, 
+            CorrectOptionIndex = 2, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Что означает форм-фактор ATX?", 
+            Options = new[] { 
+                "Тип сокета процессора", 
+                "Стандарт размера и крепления материнской платы", 
+                "Версия BIOS", 
+                "Тип поддержки памяти" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Для чего нужен чипсет на материнской плате?", 
+            Options = new[] { 
+                "Только для красоты", 
+                "Управление взаимодействием компонентов (CPU, RAM, PCIe, USB)", 
+                "Только для подключения интернета", 
+                "Хранение данных пользователя" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Что такое M.2 слот на материнской плате?", 
+            Options = new[] { 
+                "Слот для оперативной памяти", 
+                "Слот для NVMe SSD накопителей", 
+                "Слот для видеокарты", 
+                "Слот для звуковой карты" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Какой разъём питания материнской платы является основным?", 
+            Options = new[] { "4-pin CPU", "24-pin ATX", "6-pin PCIe", "SATA" }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Можно ли использовать DDR5 память в плате с поддержкой только DDR4?", 
+            Options = new[] { 
+                "Да, если обновить BIOS", 
+                "Нет, физически несовместимы", 
+                "Да, но на пониженной частоте", 
+                "Только с переходником" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+
+        // === RAM / ОПЕРАТИВНАЯ ПАМЯТЬ (6 вопросов) ===
+        new QuizQuestion { 
+            Question = "Что означает маркировка DDR5-6000?", 
+            Options = new[] { 
+                "Объём памяти 6000 МБ", 
+                "Эффективная частота 6000 МГц", 
+                "Тайминги CL60", 
+                "Напряжение 6.00В" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Что такое двухканальный режим памяти?", 
+            Options = new[] { 
+                "Установка двух модулей в слоты одного цвета для увеличения пропускной способности", 
+                "Использование памяти от двух разных брендов", 
+                "Работа памяти на двух частотах одновременно", 
+                "Подключение RAM к двум процессорам" 
+            }, 
+            CorrectOptionIndex = 0, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Какой параметр памяти влияет на задержки (латентность)?", 
+            Options = new[] { "Частота", "Объём", "Тайминги (CL)", "Напряжение" }, 
+            CorrectOptionIndex = 2, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Сколько памяти рекомендуется для современных игр в 2024 году?", 
+            Options = new[] { "4 ГБ", "8 ГБ", "16 ГБ", "64 ГБ" }, 
+            CorrectOptionIndex = 2, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Что такое XMP/EXPO профиль в BIOS?", 
+            Options = new[] { 
+                "Профиль энергосбережения", 
+                "Автоматический разгон памяти до заявленной частоты", 
+                "Режим тихой работы вентиляторов", 
+                "Настройка приоритета загрузки" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Можно ли смешивать модули RAM с разной частотой?", 
+            Options = new[] { 
+                "Нет, никогда", 
+                "Да, но все модули будут работать на частоте самого медленного", 
+                "Да, система автоматически разгонит медленный модуль", 
+                "Только если они одного бренда" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+
+        // === GPU / ВИДЕОКАРТЫ (6 вопросов) ===
+        new QuizQuestion { 
+            Question = "Что означает VRAM в характеристиках видеокарты?", 
+            Options = new[] { 
+                "Virtual RAM", 
+                "Video Random Access Memory — память видеокарты", 
+                "Voltage Regulation Module", 
+                "Variable Refresh Rate Memory" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Какой интерфейс подключения видеокарты является стандартом?", 
+            Options = new[] { "PCI", "PCIe x16", "AGP", "USB-C" }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Что такое трассировка лучей (Ray Tracing)?", 
+            Options = new[] { 
+                "Технология улучшения текстуры", 
+                "Метод реалистичного расчёта освещения и отражений", 
+                "Способ разгона видеокарты", 
+                "Режим энергосбережения" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Для чего нужен разъём 12VHPWR на видеокартах RTX 40-й серии?", 
+            Options = new[] { 
+                "Подключение монитора", 
+                "Питание видеокарты (до 600 Вт)", 
+                "Синхронизация с материнской платой", 
+                "Подключение RGB-подсветки" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Что означает аббревиатура DLSS?", 
+            Options = new[] { 
+                "Deep Learning Super Sampling — ИИ-апскейлинг", 
+                "Direct Low-latency Sound System", 
+                "Dynamic Load Sharing Service", 
+                "Digital Light Shadow System" 
+            }, 
+            CorrectOptionIndex = 0, 
+            Difficulty = "hard" 
+        },
+        new QuizQuestion { 
+            Question = "Что такое интегрированная графика?", 
+            Options = new[] { 
+                "Видеокарта в отдельном слоте", 
+                "Графическое ядро, встроенное в процессор или чипсет", 
+                "Виртуальная видеокарта в облаке", 
+                "Графический редактор в ОС" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+
+        // === STORAGE / НАКОПИТЕЛИ (5 вопросов) ===
+        new QuizQuestion { 
+            Question = "В чём главное преимущество NVMe SSD перед SATA SSD?", 
+            Options = new[] { 
+                "Ниже цена", 
+                "Выше скорость за счёт подключения через PCIe", 
+                "Больший объём", 
+                "Меньше нагрев" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Что означает TBW в характеристиках SSD?", 
+            Options = new[] { 
+                "Total Bytes Written — ресурс записи", 
+                "Turbo Boost Write", 
+                "Time Before Wearout", 
+                "Technical Backup Warranty" 
+            }, 
+            CorrectOptionIndex = 0, 
+            Difficulty = "hard" 
+        },
+        new QuizQuestion { 
+            Question = "Что такое RAID 1?", 
+            Options = new[] { 
+                "Полоса данных для скорости", 
+                "Зеркалирование — дублирование данных на двух дисках", 
+                "Чётность для восстановления", 
+                "Комбинация всех уровней" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Какой интерфейс имеет наибольший теоретический предел скорости?", 
+            Options = new[] { "SATA III", "PCIe 3.0 x4", "PCIe 4.0 x4", "PCIe 5.0 x4" }, 
+            CorrectOptionIndex = 3, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Что такое S.M.A.R.T. в накопителях?", 
+            Options = new[] { 
+                "Система мониторинга состояния и предсказания сбоев", 
+                "Режим быстрого форматирования", 
+                "Технология сжатия данных", 
+                "Протокол шифрования" 
+            }, 
+            CorrectOptionIndex = 0, 
+            Difficulty = "medium" 
+        },
+
+        // === PSU / БЛОК ПИТАНИЯ (5 вопросов) ===
+        new QuizQuestion { 
+            Question = "Что означает сертификация 80 PLUS Bronze?", 
+            Options = new[] { 
+                "Гарантия 3 года", 
+                "КПД блока питания не менее 82% при 20-100% нагрузке", 
+                "Поддержка только бюджетных сборок", 
+                "Низкий уровень шума" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Какой запас по мощности блока питания рекомендуется?", 
+            Options = new[] { "0%", "10-20%", "50-100%", "200%+" }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Что такое модульный блок питания?", 
+            Options = new[] { 
+                "Состоящий из нескольких блоков", 
+                "С возможностью отсоединения ненужных кабелей", 
+                "С автоматической регулировкой напряжения", 
+                "С встроенным ИБП" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Какой разъём питания нужен для мощной видеокарты?", 
+            Options = new[] { "SATA", "4-pin CPU", "6/8-pin PCIe", "Molex" }, 
+            CorrectOptionIndex = 2, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Почему не стоит экономить на блоке питания?", 
+            Options = new[] { 
+                "Он не влияет на систему", 
+                "Некачественный БП может повредить другие компоненты", 
+                "Дешёвые БП всегда тише", 
+                "Мощные БП занимают больше места" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+
+        // === COOLING / ОХЛАЖДЕНИЕ (3 вопроса) ===
+        new QuizQuestion { 
+            Question = "Что такое TDP кулера?", 
+            Options = new[] { 
+                "Максимальная температура, которую он выдерживает", 
+                "Максимальная тепловая мощность, которую он может рассеять", 
+                "Потребляемая мощность вентиляторов", 
+                "Уровень шума в дБ" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Для чего нужна термопаста?", 
+            Options = new[] { 
+                "Крепление кулера к плате", 
+                "Заполнение микронеровностей между процессором и кулером для улучшения теплопередачи", 
+                "Защита от статического электричества", 
+                "Смазка для вентиляторов" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+        new QuizQuestion { 
+            Question = "Какой размер вентилятора наиболее распространён в корпусах ATX?", 
+            Options = new[] { "80 мм", "120 мм", "200 мм", "250 мм" }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "easy" 
+        },
+
+        // === BIOS / UEFI / ОБЩЕЕ (2 вопроса) ===
+        new QuizQuestion { 
+            Question = "В чём разница между BIOS и UEFI?", 
+            Options = new[] { 
+                "Это одно и то же", 
+                "UEFI — современный интерфейс с поддержкой мыши, больших дисков и безопасной загрузки", 
+                "BIOS быстрее загружается", 
+                "UEFI работает только на AMD" 
+            }, 
+            CorrectOptionIndex = 1, 
+            Difficulty = "medium" 
+        },
+        new QuizQuestion { 
+            Question = "Какую клавишу чаще всего используют для входа в BIOS при загрузке?", 
+            Options = new[] { "F1 / F2 / Del", "Ctrl+Alt+Delete", "Esc", "Пробел" }, 
+            CorrectOptionIndex = 0, 
+            Difficulty = "easy" 
+        }
+    );
+    await db.SaveChangesAsync();
+    Console.WriteLine("✅ Seeded 40 quiz questions");
+}
 
     // 🔹 BIOS Versions
     if (!await db.BiosVersions.AnyAsync())

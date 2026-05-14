@@ -25,20 +25,39 @@ public class ComponentsController : ControllerBase
         _db = db;
     }
 
-    // GET: api/components?name=rtx
+    // 🔥 ГЛАВНЫЙ ЭНДПОИНТ: Получение компонентов с фильтрацией
+    // GET: api/components?name=rtx&category=Videocard
     [HttpGet]
-    public async Task<IActionResult> GetComponentsByName([FromQuery] string? name)
+    public async Task<IActionResult> GetComponents(
+        [FromQuery] string? name, 
+        [FromQuery] string? category)
     {
         var query = _db.Components.AsQueryable();
+        
+        // Фильтр по имени 
         if (!string.IsNullOrEmpty(name))
         {
             query = query.Where(c => c.Name.Contains(name));
         }
+        
+        //  Фильтр по категории 
+        if (!string.IsNullOrEmpty(category))
+        {
+            if (Enum.TryParse<ComponentCategory>(category, ignoreCase: true, out var parsedCategory))
+            {
+                query = query.Where(c => c.Category == parsedCategory);
+            }
+            else
+            {
+                return BadRequest(new { message = "Неверный тип категории. Допустимые: Processor, Motherboard, Ram, Storage, Videocard, Cooling" });
+            }
+        }
+        
         var components = await query.ToListAsync();
         return Ok(components);
     }
 
-    // GET: api/components/{id}
+    // GET: api/components/{id} - Получение одного компонента
     [HttpGet("{id}")]
     public async Task<IActionResult> GetComponentById(string id)
     {
@@ -61,7 +80,6 @@ public class ComponentsController : ControllerBase
     }
 
     // GET: api/components/categories?category=videocard
-    [HttpGet("categories")]
     public async Task<IActionResult> GetComponentsByCategory([FromQuery] string? category)
     {
         var query = _db.Components.AsQueryable();
@@ -81,7 +99,7 @@ public class ComponentsController : ControllerBase
     }
 
     // POST: api/components/check-compatibility
-    // проверка совместимости
+    // Проверка совместимости сборки
     [HttpPost("check-compatibility")]
     public async Task<IActionResult> CheckCompatibility([FromBody] BuildRequest request)
     {
@@ -98,13 +116,13 @@ public class ComponentsController : ControllerBase
         var errors = new List<string>();
         var warnings = new List<string>();
 
-        // поиск компонентов по категориям
+        // Поиск компонентов по категориям для логики проверки
         var cpu = components.FirstOrDefault(c => c.Category == ComponentCategory.Processor);
         var motherboard = components.FirstOrDefault(c => c.Category == ComponentCategory.Motherboard);
         var ram = components.FirstOrDefault(c => c.Category == ComponentCategory.Ram);
         var gpu = components.FirstOrDefault(c => c.Category == ComponentCategory.Videocard);
 
-        // проверка сокета 
+        // Проверка сокета (CPU ↔ Motherboard)
         if (cpu != null && motherboard != null)
         {
             if (!string.IsNullOrEmpty(cpu.Socket) && !string.IsNullOrEmpty(motherboard.Socket))
@@ -116,7 +134,7 @@ public class ComponentsController : ControllerBase
             }
         }
 
-        //проверка памяти  =  проверка по строке DDR4/DDR5
+        // Проверка памяти (RAM ↔ Motherboard) - DDR4/DDR5
         if (ram != null && motherboard != null)
         {
             var ramSpecs = ram.Specifications.ToLower();
@@ -125,7 +143,6 @@ public class ComponentsController : ControllerBase
             bool isDdr4Ram = ramSpecs.Contains("ddr4");
             bool isDdr5Ram = ramSpecs.Contains("ddr5");
 
-            //упоминание типа памяти в материнке
             bool moboSupportsDdr4 = moboSpecs.Contains("ddr4");
             bool moboSupportsDdr5 = moboSpecs.Contains("ddr5");
 
@@ -136,7 +153,7 @@ public class ComponentsController : ControllerBase
                 errors.Add($"Несовместимость памяти: ОЗУ DDR5 не подходит к этой материнской плате.");
         }
 
-        //подсчет энергопотребления 
+        //Подсчет энергопотребления (CPU + GPU)
         int totalPower = 0;
         if (cpu != null) totalPower += cpu.PowerConsumption;
         if (gpu != null) totalPower += gpu.PowerConsumption;
@@ -215,7 +232,7 @@ public class ComponentsController : ControllerBase
     }
 }
 
-// модель для запроса совместимости
+// Модель для запроса проверки совместимости
 public class BuildRequest
 {
     public List<string> ComponentIds { get; set; } = new List<string>();

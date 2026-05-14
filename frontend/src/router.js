@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import LandingPage from '@/views/LandingPage.vue'
 import LoginPage from '@/auth/LoginPage.vue'
 import HomePage from '@/views/HomePage.vue'
 import ErrorPage from '@/views/ErrorPage.vue'
@@ -14,8 +15,16 @@ import LabPage from '@/components/LabPage.vue'
 import QuizPage from '@/views/QuizPage.vue'
 import QuizResultPage from '@/views/QuizResultPage.vue'
 
+
 const routes = [
-  { path: '/', component: LoginPage },
+
+  { path: '/', name: 'landing', component: () => import('@/views/LandingPage.vue') },
+  
+  { path: '/auth', name: 'auth', component: () => import('@/auth/LoginPage.vue') },
+  { path: '/auth/login', redirect: '/auth' },
+  { path: '/auth/register', redirect: '/auth' },
+  
+ 
   { path: '/home', component: HomePage },
   { path: '/component/:type', component: ComponentsPage },
   { path: '/components-details/:id', name: 'components-details', component: ComponentsDetailsPage },
@@ -29,7 +38,7 @@ const routes = [
   { path: '/quiz-result', name: 'quiz-result', component: QuizResultPage },
   { path: '/lab', name: 'lab', component: LabPage },
   
-  // 🔥 Catch-all для 404 — должен быть ПОСЛЕДНИМ
+  // 404 — должен быть ПОСЛЕДНИМ
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: ErrorPage }
 ]
 
@@ -49,7 +58,7 @@ router.beforeEach((to, from, next) => {
     user = null;
   }
 
-  const publicPages = ['/', '/forgot-password', '/reset-password'];
+  const publicPages = ['/', '/forgot-password', '/reset-password','/auth'];
 
   if (to.name === 'NotFound') {
     return next();

@@ -76,9 +76,6 @@
           <button class="action-btn blue" @click="$router.push('/quiz')">
             🧠 Пройти квиз
           </button>
-          <button class="action-btn red" @click="logout">
-            🚪 Выйти
-          </button>
         </section>
       </template>
     </main>
@@ -89,130 +86,95 @@
 import AppHeader from '@/components/AppHeader.vue'
 import api from '@/api'
 import '@/assets/styles/pages/ProfilePage.css'
+
 export default {
   name: 'ProfilePage',
-
-  components: {
-    AppHeader
-  },
-
+  components: { AppHeader },
   data() {
     return {
       loading: true,
-
-      user: {
-        Username: '',
-        Email: '',
-        Role: ''
-      },
-
+      user: { Username: '', Email: '', Role: '' },
       quizResults: [],
       viewedComponents: [],
       totalComponents: 0
     }
   },
-
   computed: {
     bestScore() {
       if (!this.quizResults.length) return 0
-
       return Math.max(...this.quizResults.map(q => q.Score))
     },
-
     bestTotal() {
       if (!this.quizResults.length) return 0
-
-      return this.quizResults[0].TotalQuestions
+      return this.quizResults[0]?.TotalQuestions || 0
     },
-
     progressPercent() {
       if (!this.totalComponents) return 0
-
-      return Math.round(
-        (this.viewedComponents.length / this.totalComponents) * 100
-      )
+      return Math.round((this.viewedComponents.length / this.totalComponents) * 100)
     }
   },
-
   async mounted() {
     await this.loadProfile()
   },
-
   methods: {
     async loadProfile() {
       this.loading = true
 
       try {
         const savedUser = localStorage.getItem('user')
-
         if (savedUser) {
-          this.user = JSON.parse(savedUser)
+          try {
+            this.user = JSON.parse(savedUser)
+          } catch (e) {
+            console.warn('Failed to parse user from localStorage', e)
+            localStorage.removeItem('user')
+          }
         }
 
-        // quiz results
         try {
-          const quizRes = await api.get('/quiz/results')
-
+          const token = localStorage.getItem('token')
+          const headers = token ? { Authorization: `Bearer ${token}` } : {}
+          
+          const quizRes = await api.get('/quiz/results', { headers })
           this.quizResults = quizRes.data || []
         } catch (e) {
           console.warn('Quiz results error', e)
+          if (e.response?.status === 401) {
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            this.$router.push('/')
+          }
         }
-
-        // viewed components
-        const viewed = localStorage.getItem('viewed_components')
-
-        if (viewed) {
-          this.viewedComponents = JSON.parse(viewed)
-        }
-
-        // total components
-        try {
-          const compRes = await api.get('/components')
-
-          this.totalComponents = compRes.data.length || 0
-        } catch (e) {
-          console.warn('Components error', e)
-        }
-
-      } catch (err) {
-        console.error(err)
+      } catch (error) {
+        console.error('Profile load error:', error)
       } finally {
         this.loading = false
       }
     },
 
     formatDate(date) {
+      if (!date) return '-'
       return new Date(date).toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        year: 'numeric', month: 'long', day: 'numeric'
       })
     },
 
     getQuizClass(score, total) {
+      if (!total) return 'bad'
       const percent = (score / total) * 100
-
       if (percent >= 80) return 'excellent'
       if (percent >= 50) return 'good'
-
       return 'bad'
     },
 
     getQuizLabel(score, total) {
+      if (!total) return 'Слабо'
       const percent = (score / total) * 100
-
       if (percent >= 80) return 'Отлично'
       if (percent >= 50) return 'Хорошо'
-
       return 'Слабо'
     },
 
-    logout() {
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-
-      this.$router.push('/')
-    }
   }
 }
-</script>  
+</script>

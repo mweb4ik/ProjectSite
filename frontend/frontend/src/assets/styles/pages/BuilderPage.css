@@ -1,0 +1,260 @@
+/* ===== ДОПОЛНЕНИЯ: Заголовки и типографика ===== */
+.selection-panel h2,
+.build-panel h2 {
+  color: #00a3ff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0,163,255,.3);
+  text-shadow: 0 0 10px rgba(0,163,255,.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.selection-panel h2::before,
+.build-panel h2::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  background: linear-gradient(180deg, #00ff9d, #00a3ff);
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* ===== ДОПОЛНЕНИЯ: Кнопка удаления (✕) в шаблоне ===== */
+.build-item button {
+  background: rgba(255,77,109,.15);
+  color: #ff4d6d;
+  border: 1px solid rgba(255,77,109,.4);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: .3s;
+  line-height: 1;
+}
+.build-item button:hover {
+  background: rgba(255,77,109,.25);
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(255,77,109,.4);
+}
+
+/* ===== ДОПОЛНЕНИЯ: Заголовок в result-box ===== */
+.result-box h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  color: #e2e8f0;
+}
+.result-box.success h3 {
+  color: #00ff9d;
+  text-shadow: 0 0 8px rgba(0,255,157,.4);
+}
+.result-box.error h3 {
+  color: #ff4d6d;
+  text-shadow: 0 0 8px rgba(255,77,109,.4);
+}
+
+/* ===== ДОПОЛНЕНИЯ: Focus states для доступности ===== */
+.tab:focus-visible,
+.btn-add:focus-visible,
+.btn-remove:focus-visible,
+.btn-save:focus-visible,
+.btn-check:focus-visible,
+.btn-clear:focus-visible {
+  outline: 2px solid #00ff9d;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0,255,157,.2);
+}
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #00a3ff;
+  border-color: #00a3ff;
+  box-shadow: 0 0 0 3px rgba(0,163,255,.2);
+}
+
+/* ===== ДОПОЛНЕНИЯ: Анимации появления ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.component-card-small {
+  animation: fadeInUp .3s ease forwards;
+}
+.component-card-small:nth-child(odd) { animation-delay: .05s; }
+.component-card-small:nth-child(even) { animation-delay: .1s; }
+
+.build-item {
+  animation: fadeInUp .25s ease forwards;
+}
+.build-item:nth-child(2) { animation-delay: .05s; }
+.build-item:nth-child(3) { animation-delay: .1s; }
+.build-item:nth-child(4) { animation-delay: .15s; }
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,157,.4); }
+  50% { box-shadow: 0 0 0 8px rgba(0,255,157,0); }
+}
+.result-box.success {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* ===== ДОПОЛНЕНИЯ: Улучшенный Badge с неоновым свечением ===== */
+.badge {
+  box-shadow: 0 0 8px rgba(0,255,157,.3);
+  letter-spacing: 0.5px;
+}
+.badge:hover {
+  box-shadow: 0 0 14px rgba(0,255,157,.6);
+  transform: scale(1.05);
+  transition: .2s;
+}
+
+/* Power bar визуализация (опционально) */
+.power-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.power-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff9d, #00a3ff);
+  border-radius: 999px;
+  transition: width .4s ease;
+}
+.power-fill.warning {
+  background: linear-gradient(90deg, #ffc107, #ff9800);
+}
+.power-fill.danger {
+  background: linear-gradient(90deg, #ff4d6d, #ff1744);
+  animation: pulseDanger 1.5s ease-in-out infinite;
+}
+@keyframes pulseDanger {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .7; }
+}
+
+/*  Empty states с иконкой */
+.empty-build::before,
+.empty::before,
+.loader::before {
+  content: '⚙️';
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 10px rgba(0,163,255,.4));
+}
+.loader::before {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0,163,255,.3);
+  border-top-color: #00a3ff;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/*  Hover-эффект для build-item с индикацией  */
+.build-item::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  background: #00ff9d;
+  border-radius: 50%;
+  opacity: 0;
+  transition: .3s;
+  box-shadow: 0 0 8px rgba(0,255,157,.6);
+}
+.build-item:hover::after {
+  opacity: 1;
+  transform: scale(1.3);
+}
+
+/* Стили для совместимост */
+.compatibility-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+.compatibility-status.ok {
+  background: rgba(0,255,157,.15);
+  color: #00ff9d;
+  border: 1px solid rgba(0,255,157,.4);
+}
+.compatibility-status.warn {
+  background: rgba(255,193,7,.15);
+  color: #ffc107;
+  border: 1px solid rgba(255,193,7,.4);
+}
+.compatibility-status.err {
+  background: rgba(255,77,109,.15);
+  color: #ff4d6d;
+  border: 1px solid rgba(255,77,109,.4);
+}
+
+
+
+@media (max-width: 768px) {
+  .selection-panel h2,
+  .build-panel h2 {
+    font-size: 1.2rem;
+  }
+  .component-card-small {
+    padding: 0.8rem;
+  }
+  .card-header {
+    font-size: 0.9rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .btn-add {
+    width: 100%;
+    padding: 10px;
+  }
+  .build-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .build-item button {
+    width: 24px;
+    height: 24px;
+    font-size: 0.9rem;
+  }
+}
+
+
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

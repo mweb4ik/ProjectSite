@@ -14,7 +14,69 @@
           class="search-input"
         />
       </div>
+      <!-- Фильтр по категориям -->
+<div class="category-filter">
+  <button 
+    class="cat-btn" 
+    :class="{ active: currentCategory === 'all' }"
+    @click="setCategory('all')"
+  >
+    Все
+  </button>
+  <button 
+    class="cat-btn" 
+    :class="{ active: currentCategory === 'Processor' }"
+    @click="setCategory('Processor')"
+  >
+    🧠 CPU
+  </button>
+  <button 
+    class="cat-btn" 
+    :class="{ active: currentCategory === 'Motherboard' }"
+    @click="setCategory('Motherboard')"
+  >
+    🔌 MB
+  </button>
+  <button 
+    class="cat-btn" 
+    :class="{ active: currentCategory === 'Ram' }"
+    @click="setCategory('Ram')"
+  >
+    💾 RAM
+  </button>
+  <button 
+    class="cat-btn" 
+    :class="{ active: currentCategory === 'Videocard' }"
+    @click="setCategory('Videocard')"
+  >
+    🎮 GPU
+  </button>
+  <button 
+    class="cat-btn" 
+    :class="{ active: currentCategory === 'Storage' }"
+    @click="setCategory('Storage')"
+  >
+    💿 SSD
+  </button>
+  <button 
+    class="cat-btn" 
+    :class="{ active: currentCategory === 'Cooling' }"
+    @click="setCategory('Cooling')"
+  >
+    ❄️ COOL
+  </button>
+</div>
 
+<!-- Поиск (уже есть) -->
+<div class="search-bar">
+  <input
+    v-model="searchQuery"
+    @input="handleSearch"
+    type="text"
+    placeholder="Поиск (RTX, Intel)..."
+    class="search-input"
+  />
+</div>
       <div v-if="loading" class="loader">Загрузка...</div>
 
       <div v-else-if="components.length === 0" class="empty-state">
@@ -98,23 +160,27 @@ const getImageUrl = (path) => {
 const onImageError = (e) => {
   e.target.style.display = 'none'
 }
-
+const setCategory = (category) => {
+  currentCategory.value = category
+  searchQuery.value = '' //  Сброс поиска при смене категории
+  fetchComponents()
+}
 const fetchComponents = async () => {
   loading.value = true
 
   try {
     const params = {}
 
-    if (currentCategory.value !== 'all') {
+    if (currentCategory.value && currentCategory.value !== 'all') {
       params.category = currentCategory.value
     }
+
 
     if (searchQuery.value.trim()) {
       params.name = searchQuery.value.trim()
     }
 
     const res = await api.get('/components', { params })
-
     components.value = (res.data || []).map(mapComponent)
 
   } catch (e) {

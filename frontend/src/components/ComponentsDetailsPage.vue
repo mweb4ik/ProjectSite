@@ -7,7 +7,7 @@
         ← Назад
       </button>
 
-      <div v-if="loading">Загрузка...</div>
+      <div v-if="loading" class="loader">Загрузка...</div>
       <div v-else-if="error">{{ error }}</div>
 
       <div v-else-if="component" class="product-card">

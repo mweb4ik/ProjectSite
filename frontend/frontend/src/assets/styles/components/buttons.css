@@ -1,0 +1,23 @@
+.btn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #00FF9D, #00A3FF);
+  color: white;
+}
+
+.btn-green { background: #28a745; color: white; }
+.btn-red { background: #dc3545; color: white; }
+.btn-blue { background: #17a2b8; color: white; }
+.btn-yellow { background: #ffc107; color: black; }
+
+.btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.2);
+}

@@ -1,11 +1,28 @@
-.lab-page {
+
+.lab-wrapper {
   min-height: 100vh;
-  padding: 40px;
+  padding-top: 100px; /* Место для хедера */
+  background: #0b0f17; /* Тёмный фон */
+}
+
+.lab-page {
+  padding: 0 20px 40px;
   background:
     radial-gradient(circle at top, rgba(0,255,200,0.12), transparent 30%),
     #0b0f17;
-
   color: #fff;
+
+}
+
+
+@media (max-width: 768px) {
+  .lab-wrapper {
+    padding-top: 90px; 
+  }
+  
+  .lab-page {
+    padding: 0 15px 30px;
+  }
 }
 
 /* HERO */

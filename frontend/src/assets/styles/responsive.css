@@ -1,0 +1,259 @@
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px; 
+  -webkit-text-size-adjust: 100%; 
+}
+
+body {
+  overflow-x: hidden; 
+  width: 100%;
+  min-width: 320px; 
+}
+
+/*  Адаптивные контейнеры */
+.container,
+.content,
+.page-content {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/*  Адаптивная типографика (жидкие шрифты) */
+h1 { font-size: clamp(1.75rem, 5vw, 3rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 2.25rem); }
+h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
+p, span, label, input, button {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+}
+
+/*  Адаптивные отступы */
+.section,
+.card,
+.panel {
+  padding: clamp(1rem, 3vw, 2rem);
+  margin: clamp(0.5rem, 2vw, 1.5rem) 0;
+}
+
+/*  Гибкие сетки (автоматический перенос) */
+.grid,
+.grid-cols,
+.components-grid,
+.features,
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+/*  Гибкие флекс-контейнеры */
+.flex,
+.actions,
+.card-header,
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.5rem, 2vw, 1rem);
+  align-items: center;
+}
+
+/*  Адаптивные изображения */
+img,
+picture,
+.video-wrapper {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/*  Адаптивные таблицы */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+}
+
+table {
+  min-width: 600px; /* Таблица не сжимается меньше — появляется скролл */
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* 🔹 Адаптивные кнопки и инпуты (удобный тап) */
+button,
+.btn,
+input,
+select,
+textarea {
+  min-height: 44px; /* Минимальный размер для тач-интерфейса */
+  min-width: 44px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  touch-action: manipulation; /* Убирает задержку при тапе */
+}
+
+/*  Скрытие скроллбара (для эстетики, но скролл работает) */
+.scrollable {
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.scrollable::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Медиа-запросы: планшеты (< 1024px) */
+@media (max-width: 1024px) {
+  .container,
+  .content {
+    padding: 1.25rem;
+  }
+  
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+/* Медиа-запросы: мобильные (< 768px) */
+@media (max-width: 768px) {
+  html { font-size: 15px; }
+  
+  .container,
+  .content {
+    padding: 1rem;
+  }
+  
+  /* Сложение колонок в одну */
+  .grid-2,
+  .grid-cols-2,
+  .two-columns,
+  .card-body,
+  .hero {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+  }
+  
+  /* Центрирование заголовков на мобильных */
+  .page-title,
+  .section-title,
+  .card-header {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Кнопки на всю ширину */
+  .btn,
+  .actions button,
+  .modal-actions button {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Скрываем второстепенные элементы */
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/*  Медиа-запросы: маленькие мобильные (≤ 375px — iPhone SE) */
+@media (max-width: 375px) {
+  html { font-size: 14px; }
+  
+  .container,
+  .content {
+    padding: 0.75rem;
+  }
+  
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.1rem; }
+  
+  .card,
+  .panel,
+  .modal {
+    padding: 0.875rem;
+    border-radius: 12px;
+  }
+  
+  button,
+  .btn,
+  input {
+    min-height: 48px; 
+    font-size: 0.95rem;
+    padding: 0.875rem;
+  }
+  
+  /* Горизонтальный скролл для вкладок/фильтров */
+  .tabs,
+  .category-filter,
+  .filter-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 163, 255, 0.4) transparent;
+  }
+  
+  .tabs::-webkit-scrollbar,
+  .category-filter::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .tabs::-webkit-scrollbar-thumb,
+  .category-filter::-webkit-scrollbar-thumb {
+    background: rgba(0, 163, 255, 0.4);
+    border-radius: 2px;
+  }
+  
+  .tab,
+  .cat-btn,
+  .filter-btn {
+    flex-shrink: 0;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+/*  Медиа-запросы: очень маленькие (≤ 320px) */
+@media (max-width: 320px) {
+  html { font-size: 13px; }
+  
+  .container { padding: 0.5rem; }
+  
+  button,
+  input {
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+}
+
+/* 🔹 Поддержка prefers-reduced-motion (доступность) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Пейзажная ориентация на мобильных */
+@media (max-height: 500px) and (orientation: landscape) {
+  .modal,
+  .fullscreen {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}

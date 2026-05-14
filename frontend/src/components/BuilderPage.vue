@@ -2,11 +2,10 @@
   <div class="builder-page">
     <AppHeader :user="user" @logout="logout" />
 
-    <main class="content">
+    <div class="content" role="main">
       <h1 class="page-title">🛠️ Конфигуратор ПК</h1>
 
       <div class="builder-container">
-
         <!-- LEFT -->
         <div class="selection-panel">
           <h2>Добавить компоненты</h2>
@@ -24,38 +23,30 @@
 
           <!-- LIST -->
           <div class="components-list">
-
-            <div v-if="loading" class="loader">
-              Загрузка...
-            </div>
-
-            <div v-else-if="components.length === 0" class="empty">
-              Нет компонентов
-            </div>
+            <div v-if="loading" class="loader">Загрузка...</div>
+            <div v-else-if="components.length === 0" class="empty">Нет компонентов</div>
 
             <div v-else class="grid">
-              <div
-                v-for="item in components"
-                :key="item.id"
-                class="component-card-small"
-              >
+           <div
+  v-for="item in components"
+  :key="item.id" 
+  class="component-card-small"
+>
+  <div class="card-header">
+    <span class="name">{{ item.name }}</span>
+    <span class="price">{{ item.price }} {{ item.currency }}</span>
+  </div>
+  <p class="specs">{{ item.specifications }}</p>
 
-                <div class="card-header">
-                  <span class="name">{{ item.name }}</span>
-                  <span class="price">{{ item.price }} {{ item.currency }}</span>
-                </div>
-
-                <p class="specs">{{ item.specifications }}</p>
-
-                <button
-                  class="btn-add"
-                  @click="addComponent(item)"
-                  :disabled="isInBuild(item.category)"
-                >
-                  {{ isInBuild(item.category) ? '✓ В сборке' : '+' }}
-                </button>
-
-              </div>
+  <!-- 🔥 Визуал по item.id, блокировка по category -->
+  <button
+    class="btn-add"
+    @click.stop="addComponent(item)"
+    :disabled="isInBuild(item.category)"
+  >
+    {{ isItemInBuild(item.id) ? '✓ В сборке' : '+' }}
+  </button>
+</div>
             </div>
           </div>
         </div>
@@ -63,13 +54,11 @@
         <!-- RIGHT -->
         <div class="build-panel">
           <h2>Ваша сборка</h2>
-
           <div v-if="buildItems.length === 0" class="empty-build">
             <p>Сборка пуста</p>
           </div>
 
           <div v-else>
-
             <div class="build-list">
               <div
                 v-for="(item, index) in buildItems"
@@ -77,59 +66,37 @@
                 class="build-item"
               >
                 <div>
-                  <span class="badge">
-                    {{ getCategoryName(item.category) }}
-                  </span>
+                  <span class="badge">{{ getCategoryName(item.category) }}</span>
                   <span>{{ item.name }}</span>
                 </div>
-
-                <button @click="removeComponent(index)">✕</button>
+                <button @click.stop="removeComponent(index)">✕</button>
               </div>
             </div>
 
-            <!-- SUMMARY -->
             <div class="summary">
               <div>Итого: {{ totalPrice }} {{ currency }}</div>
               <div>Потребление: {{ estimatedPower }} W</div>
             </div>
 
-            <!-- ACTIONS -->
             <div class="actions">
-              <button @click="checkCompatibility" :disabled="checking">
-                Проверить
-              </button>
-
-              <button @click="saveBuild" :disabled="saving">
-                Сохранить
-              </button>
-
-              <button @click="clearBuild">
-                Очистить
-              </button>
+              <button @click="checkCompatibility" :disabled="checking">Проверить</button>
+              <button @click="saveBuild" :disabled="saving">Сохранить</button>
+              <button @click="clearBuild">Очистить</button>
             </div>
 
-            <!-- RESULT -->
             <div v-if="compatibilityResult" class="result-box">
               <h3>{{ compatibilityResult.message }}</h3>
-
               <div v-if="compatibilityResult.errors?.length">
-                <p v-for="e in compatibilityResult.errors" :key="e">
-                  ❌ {{ e }}
-                </p>
+                <p v-for="e in compatibilityResult.errors" :key="e">❌ {{ e }}</p>
               </div>
-
               <div v-if="compatibilityResult.warnings?.length">
-                <p v-for="w in compatibilityResult.warnings" :key="w">
-                  ⚠️ {{ w }}
-                </p>
+                <p v-for="w in compatibilityResult.warnings" :key="w">⚠️ {{ w }}</p>
               </div>
             </div>
-
           </div>
         </div>
-
       </div>
-    </main>
+    </div>
   </div>
 </template>
 
@@ -141,71 +108,42 @@ import AppHeader from '@/components/AppHeader.vue'
 import { useBuilder } from '@/composables/useBuilder'
 
 const router = useRouter()
-
 const user = JSON.parse(localStorage.getItem('user') || 'null')
 
-/* ================= COMPOSABLE ================= */
 const {
   buildItems,
   components,
   selectedCategory,
-
   loading,
   checking,
   saving,
-
   compatibilityResult,
   currency,
-
   totalPrice,
   estimatedPower,
-
   fetchComponents,
   addComponent,
   removeComponent,
   clearBuild,
   isInBuild,
+  isItemInBuild,  
   checkCompatibility,
   saveBuild
 } = useBuilder()
 
-/* ================= SAFE REQUEST CONTROL ================= */
-let requestId = 0
-
-const safeFetchComponents = async () => {
-  const id = ++requestId
-
-  await fetchComponents()
-
-  // если пришёл старый ответ — игнор
-  if (id !== requestId) return
-}
-
 /* ================= UI ================= */
-const categories = [
-  'Processor',
-  'Motherboard',
-  'Ram',
-  'Videocard',
-  'Storage',
-  'Cooling'
-]
+const categories = ['Processor', 'Motherboard', 'Ram', 'Videocard', 'Storage', 'Cooling']
 
 const selectCategory = (cat) => {
   selectedCategory.value = cat
-  safeFetchComponents()
+  fetchComponents()
 }
 
 const getCategoryName = (cat) => ({
-  Processor: 'CPU',
-  Motherboard: 'MB',
-  Ram: 'RAM',
-  Videocard: 'GPU',
-  Storage: 'SSD',
-  Cooling: 'COOL'
+  Processor: 'CPU', Motherboard: 'MB', Ram: 'RAM',
+  Videocard: 'GPU', Storage: 'SSD', Cooling: 'COOL'
 }[cat] || cat)
 
-/* ================= AUTH ================= */
 const logout = () => {
   localStorage.clear()
   router.push('/')
@@ -213,6 +151,6 @@ const logout = () => {
 
 /* ================= INIT ================= */
 onMounted(() => {
-  safeFetchComponents()
+  fetchComponents()
 })
 </script>

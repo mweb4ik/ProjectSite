@@ -1,4 +1,5 @@
 <template>
+    <AppHeader :user="user" @logout="handleLogout" />
   <div class="bios-page">
     <div class="bios-hero">
       <h1 class="bios-title">BIOS / UEFI CENTER</h1>
@@ -213,11 +214,13 @@
 </template>
 
 <script setup>
-import '@/assets/styles/pages/BiosPage.css'
-
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'          
+import AppHeader from '@/components/AppHeader.vue' 
+import '@/assets/styles/pages/BiosPage.css'
 import api from '@/api'
 
+const router = useRouter()
 const biosList = ref([])
 const loading = ref(true)
 
@@ -232,7 +235,12 @@ const cpuSupport = ref(null)
 const progress = ref(0)
 const isUpdating = ref(false)
 const currentStep = ref(-1)
-
+const user = ref(JSON.parse(localStorage.getItem('user') || '{}'))
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  router.push('/')
+}
 const flashSteps = [
   'Проверка файла BIOS',
   'Подготовка памяти',

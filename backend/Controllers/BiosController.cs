@@ -7,7 +7,7 @@ using PcComponentsApi.Models;
 [Route("api/[controller]")]
 public class BiosController : ControllerBase {
       private readonly AppDbContext _db;
-    private readonly IConfiguration _config;
+
 
     public BiosController(AppDbContext db, IConfiguration config)
     {

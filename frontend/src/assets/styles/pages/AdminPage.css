@@ -1,8 +1,15 @@
-.admin-page {
+
+.admin-wrapper {
   min-height: 100vh;
+  padding-top: 100px; 
+  background: #0b0f19; 
+}
+
+
+.admin-page {
   background: #0b0f19;
   color: white;
-  padding: 40px 20px;
+  padding: 0 20px 40px; 
 }
 
 .page-header {
@@ -38,9 +45,7 @@
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .stats-grid {
@@ -54,16 +59,9 @@
   display: flex;
   align-items: center;
   gap: 15px;
-
   padding: 25px;
   border-radius: 18px;
-
-  background: linear-gradient(
-    135deg,
-    #1f2937,
-    #374151
-  );
-
+  background: linear-gradient(135deg, #1f2937, #374151);
   border: 1px solid rgba(255,255,255,0.08);
 }
 
@@ -140,12 +138,7 @@
 
 .btn-add,
 .btn-save {
-  background: linear-gradient(
-    135deg,
-    #6366f1,
-    #8b5cf6
-  );
-
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
   border: none;
   padding: 12px 18px;
@@ -171,52 +164,32 @@
   margin-right: 10px;
 }
 
-.icon-btn.delete:hover {
-  transform: scale(1.15);
-}
+.icon-btn.delete:hover { transform: scale(1.15); }
+.icon-btn.edit:hover { transform: scale(1.15); }
 
-.icon-btn.edit:hover {
-  transform: scale(1.15);
-}
-
-.actions {
-  white-space: nowrap;
-}
-
-.empty {
-  text-align: center;
-  padding: 30px;
-  color: #94a3b8;
-}
+.actions { white-space: nowrap; }
+.empty { text-align: center; padding: 30px; color: #94a3b8; }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-
   background: rgba(0,0,0,0.7);
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   z-index: 1000;
 }
 
 .modal {
   width: 90%;
   max-width: 700px;
-
   background: #111827;
-
   border-radius: 20px;
   padding: 30px;
-
   border: 1px solid rgba(255,255,255,0.08);
 }
 
-.modal-header {
-  margin-bottom: 25px;
-}
+.modal-header { margin-bottom: 25px; }
 
 .form-grid {
   display: grid;
@@ -224,9 +197,7 @@
   gap: 20px;
 }
 
-.form-group.full {
-  grid-column: span 2;
-}
+.form-group.full { grid-column: span 2; }
 
 .modal-actions {
   margin-top: 25px;
@@ -236,21 +207,17 @@
 }
 
 @media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-group.full {
-    grid-column: span 1;
-  }
-
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.full { grid-column: span 1; }
   .section-header {
     flex-direction: column;
     gap: 15px;
     align-items: stretch;
   }
-
-  .page-header h1 {
-    font-size: 30px;
+  .page-header h1 { font-size: 30px; }
+  
+ 
+  .admin-wrapper {
+    padding-top: 90px; 
   }
 }
