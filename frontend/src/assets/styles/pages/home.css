@@ -47,7 +47,8 @@
 }
 
 .hero-img {
-  max-width: 50%;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto 30px;
   display: block;
   border-radius: 12px;
@@ -55,12 +56,19 @@
   box-shadow: 0 0 30px rgba(0, 163, 255, 0.5);
   transition: all 0.3s ease;
 }
+
 .hero-img:hover {
   transform: translateY(4px);
   box-shadow: 0 0 40px rgba(0, 255, 157, 0.3);
 }
 
-.content { text-align: center; }
+.content { 
+  text-align: center;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 .welcome-text { font-size: 22px; margin-bottom: 8px; }
 .subtitle { font-size: 16px; color: #888; margin-bottom: 20px; }
 .highlight { color: #00FF9D; font-weight: 6; }
@@ -83,6 +91,15 @@
   transition: transform 0.2s, filter 0.2s;
 }
 .btn-component:hover { transform: translateY(-2px); filter: brightness(1.2); }
+
+.all-components {
+  background: linear-gradient(135deg, #00FF9D, #00A3FF);
+  box-shadow: 0 0 20px rgba(0, 163, 255, 0.4);
+}
+
+.all-components:hover {
+  box-shadow: 0 0 30px rgba(0, 255, 157, 0.6);
+}
 
 .green { background-color: #28a745; }
 .red { background-color: #dc3545; }
@@ -123,3 +140,32 @@
   gap: 16px; width: 100%; margin-top: 20px;
 }
 .skeleton-btn { height: 50px; }
+
+/* Адаптивность для мобильных устройств (375px) */
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 18px;
+  }
+  
+  .hero-img {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .buttons-grid,
+  .sections-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .btn-component,
+  .btn-section {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  
+  .content {
+    padding: 0 15px;
+  }
+}

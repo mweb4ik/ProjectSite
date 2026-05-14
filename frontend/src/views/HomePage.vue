@@ -15,12 +15,7 @@
         <p class="welcome-text">Добро пожаловать, {{ user.Username }}</p>
         <p class="subtitle">Выберите компонент для изучения</p>
         <div class="buttons-grid">
-          <button class="btn-component green" @click="goTo('videocard')">📟 Видеокарта</button>
-          <button class="btn-component red" @click="goTo('processor')">🔲 Процессор</button>
-          <button class="btn-component blue" @click="goTo('motherboard')">🀆 Материнская плата</button>
-          <button class="btn-component yellow" @click="goTo('cooling')">𖣘 Охлаждение</button>
-          <button class="btn-component yellow" @click="goTo('ram')">𝐑𝐚𝐦 Оперативная память</button>
-          <button class="btn-component dark" @click="goTo('storage')">🗄️ Накопитель</button>
+          <button class="btn-component all-components" @click="goTo('all')">🖥️ Все комплектующие</button>
         </div>
         <div class="sections-grid">
           <p class="subtitle">Или выберите раздел:</p>
@@ -87,6 +82,10 @@ const logout = () => {
 
 const goTo = (page) => {
   const componentPages = ['videocard', 'processor', 'motherboard', 'cooling', 'ram', 'storage'];
-  router.push(componentPages.includes(page) ? `/component/${page}` : `/${page}`);
+  if (page === 'all') {
+    router.push('/component/all');
+  } else {
+    router.push(componentPages.includes(page) ? `/component/${page}` : `/${page}`);
+  }
 };
 </script> 
