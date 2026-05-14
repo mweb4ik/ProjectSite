@@ -53,6 +53,7 @@
 </template>
 
 <script setup>
+// Загрузка стилей страницы деталей компонентов
 import '@/assets/styles/pages/ComponentsDetailsPage.css'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -63,22 +64,26 @@ import { mapComponent } from '@/utils/mapper'
 const route = useRoute()
 const router = useRouter()
 
+// Данные пользователя из localStorage
 const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
 
 const component = ref(null)
 const loading = ref(true)
 const error = ref(null)
 
+// Формирование URL изображения компонента
 const getImageUrl = (path) => {
   if (!path) return ''
   const base = api.defaults.baseURL?.replace('/api', '') || ''
   return `${base}/${path.replace(/^\/+/, '').replace('wwwroot/', '')}`
 }
 
+// Обработка ошибок загрузки изображений
 const onImageError = (e) => {
   e.target.style.display = 'none'
 }
 
+// Загрузка данных компонента по ID
 const loadComponent = async () => {
   loading.value = true
   error.value = null
@@ -89,6 +94,15 @@ const loadComponent = async () => {
 
     component.value = mapComponent(res.data)
 
+    // Отправка флага просмотра компонента
+    try {
+      await api.post('/user-stats/track-component', JSON.stringify(id), {
+        headers: { 'Content-Type': 'application/json' }
+      })
+    } catch (e) {
+      console.warn('Tracking error', e)
+    }
+
   } catch (e) {
     console.error(e)
     error.value = 'Ошибка загрузки компонента'
@@ -97,6 +111,7 @@ const loadComponent = async () => {
   }
 }
 
+// Выход из аккаунта с очисткой localStorage
 const logout = () => {
   localStorage.clear()
   router.push('/')

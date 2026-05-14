@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Глобальная обработка ошибок (оставляем твою логику, она ок)
+// Глобальная обработка ошибок 
 api.interceptors.response.use(
     response => response,
     error => {
@@ -40,7 +40,7 @@ export async function getUserWithRetry(retries = 3) {
   try {
     return await api.get('/auth/me');
   } catch (e) {
-    // Если ошибка сети - пробуем снова
+    // Если ошибка сети 
     if (!e.response) {
       if (retries > 0) {
         await new Promise(r => setTimeout(r, 2000));
@@ -54,7 +54,7 @@ export async function getUserWithRetry(retries = 3) {
       throw e; 
     }
 
-    // Если ошибка сервера (5xx) - пробуем снова
+    // Если ошибка сервера (5xx) - переподключение
     if (e.response.status >= 500 && retries > 0) {
       await new Promise(r => setTimeout(r, 2000));
       return getUserWithRetry(retries - 1);

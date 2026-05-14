@@ -8,13 +8,13 @@
       </p>
     </div>
 
-    <!-- Загрузка -->
+    <!-- Loadding -->
     <div v-if="loading" class="loading">
       Загрузка BIOS...
     </div>
 
     <div v-else>
-      <!-- Проверка обновления -->
+      <!-- Check updates-->
       <section class="bios-section glass">
         <h2>⚡ Калькулятор риска обновления</h2>
 
@@ -71,7 +71,7 @@
         </div>
       </section>
 
-      <!-- Симуляция -->
+      <!-- Simulation-->
       <section class="bios-section glass">
         <h2>🧠 Симулятор обновления BIOS</h2>
 
@@ -147,7 +147,7 @@
         </div>
       </section>
 
-      <!-- Таймлайн BIOS -->
+      <!-- Timeline BIOS -->
       <section class="bios-section">
         <h2 class="timeline-title">
           📜 История версий BIOS

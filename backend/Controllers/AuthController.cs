@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,7 @@ public class AuthController : ControllerBase
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
-
+        
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
             return NotFound();
@@ -95,6 +96,51 @@ public class AuthController : ControllerBase
         return Ok(GenerateAuth(user));
     }
 
+    // ================= REFRESH TOKEN =================
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest req)
+    {
+        if (req?.RefreshToken == null)
+            return BadRequest(new { message = "Refresh token required" });
+
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.RefreshToken == req.RefreshToken);
+
+
+        if (user == null || user.RefreshTokenExpiry < DateTime.UtcNow)
+            return Unauthorized(new { message = "Invalid refresh token" });
+
+        // Ротация: старый токен больше не валиден
+        user.RefreshToken = null;
+        user.RefreshTokenExpiry = null;
+
+        var result = GenerateAuth(user); 
+
+        await _db.SaveChangesAsync();
+
+        return Ok(result);
+    }
+
+    // ================= LOGOUT (костыль-отзыв) =================
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var user = await _db.Users.FindAsync(userId);
+        if (user != null)
+        {
+            user.RefreshToken = null;
+            user.RefreshTokenExpiry = null;
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(new { message = "Logged out" });
+    }
+
     // ================= FORGOT PASSWORD =================
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
@@ -103,7 +149,6 @@ public class AuthController : ControllerBase
             return BadRequest();
 
         var email = req.Email.Trim().ToLower();
-
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
         if (user == null)
@@ -112,18 +157,22 @@ public class AuthController : ControllerBase
         user.ResetToken = Guid.NewGuid().ToString("N");
         user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(30);
 
+
+
+        user.RefreshToken = null;
+        user.RefreshTokenExpiry = null;
+
         await _db.SaveChangesAsync();
 
         var frontendUrl = _config["Frontend:Url"] ?? "http://localhost:5173";
         var resetLink = $"{frontendUrl}/reset-password?token={user.ResetToken}";
 
-        // DEV MODE (туннель)
         Console.WriteLine($"RESET LINK: {resetLink}");
 
         return Ok(new
         {
             message = "If email exists, reset link sent",
-            link = resetLink // можно убрать позже
+            link = resetLink
         });
     }
 
@@ -144,29 +193,50 @@ public class AuthController : ControllerBase
         user.PasswordHash = PasswordService.HashPassword(req.NewPassword);
         user.ResetToken = null;
         user.ResetTokenExpiry = null;
+        
+        // 🔥 Костыль: при смене пароля — отзываем рефреш-токены
+        user.RefreshToken = null;
+        user.RefreshTokenExpiry = null;
 
         await _db.SaveChangesAsync();
 
         return Ok(new { message = "Password changed successfully" });
     }
 
-    // ================= JWT =================
+    // ================= JWT HELPERS =================
+    
+    private string GenerateRefreshToken()
+    {
+        var bytes = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(bytes);
+        return Convert.ToBase64String(bytes);
+    }
+
     private object GenerateAuth(User user)
     {
+        var refreshToken = GenerateRefreshToken();
+        
+
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(1); 
+        _db.SaveChanges(); 
+
         return new
         {
-            Token = GenerateJwt(user),
+            AccessToken = GenerateJwt(user, expiresInMinutes: 15), 
+            RefreshToken = refreshToken,                            
             Username = user.Username,
             Email = user.Email,
-            Role = user.Role
+            Role = user.Role,
+            ExpiresIn = 900 // секунд
         };
     }
 
-    private string GenerateJwt(User user)
+    private string GenerateJwt(User user, int expiresInMinutes = 15)
     {
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_config["Jwt:Key"] ??
-            "SuperSecretKey12345SuperSecretKey12345"));
+            Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345"));
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -180,7 +250,7 @@ public class AuthController : ControllerBase
 
         var token = new JwtSecurityToken(
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(12),
+            expires: DateTime.UtcNow.AddMinutes(expiresInMinutes),
             signingCredentials: creds
         );
 

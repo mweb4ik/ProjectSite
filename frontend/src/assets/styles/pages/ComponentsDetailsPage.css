@@ -70,6 +70,9 @@
 
 .image-wrapper {
   display: flex;
+    width: 70%;
+    height: 100%;
+  overflow: hidden;
   flex-direction: column;
   align-items: center;
 }

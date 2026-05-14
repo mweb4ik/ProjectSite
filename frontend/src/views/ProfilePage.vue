@@ -39,37 +39,6 @@
             <p>{{ bestScore }}/{{ bestTotal }}</p>
           </div>
 
-          <div class="stat-card">
-            <span class="emoji">🔧</span>
-            <h3>Изучено компонентов</h3>
-            <p>{{ viewedComponents.length }}</p>
-          </div>
-
-          <div class="stat-card">
-            <span class="emoji">🏆</span>
-            <h3>Прогресс</h3>
-            <p>{{ progressPercent }}%</p>
-          </div>
-        </section>
-
-        <!-- PROGRESS -->
-        <section class="profile-card">
-          <div class="section-header">
-            <h2>📈 Прогресс изучения комплектующих</h2>
-            <span>{{ viewedComponents.length }}/{{ totalComponents }}</span>
-          </div>
-
-          <div class="progress-bar">
-            <div
-              class="progress-fill"
-              :style="{ width: progressPercent + '%' }"
-            ></div>
-          </div>
-
-          <p class="progress-text">
-            Вы просмотрели {{ viewedComponents.length }}
-            из {{ totalComponents }} комплектующих
-          </p>
         </section>
 
         <!-- QUIZ HISTORY -->
@@ -102,43 +71,11 @@
             </div>
           </div>
         </section>
-
-        <!-- VIEWED COMPONENTS -->
-        <section class="profile-card">
-          <div class="section-header">
-            <h2>👀 Просмотренные компоненты</h2>
-          </div>
-
-          <div v-if="viewedComponents.length === 0" class="empty">
-            Вы ещё не изучали комплектующие
-          </div>
-
-          <div v-else class="components-grid">
-            <div
-              v-for="item in viewedComponents"
-              :key="item.id"
-              class="component-item"
-            >
-              <div class="component-icon">💻</div>
-
-              <div>
-                <h3>{{ item.name }}</h3>
-                <p>{{ item.category }}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- ACTIONS -->
         <section class="actions">
           <button class="action-btn blue" @click="$router.push('/quiz')">
             🧠 Пройти квиз
           </button>
-
-          <button class="action-btn green" @click="$router.push('/components')">
-            🔧 Компоненты
-          </button>
-
           <button class="action-btn red" @click="logout">
             🚪 Выйти
           </button>
