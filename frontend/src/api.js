@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Единый HTTP-клиент: базовый URL, JSON-заголовки и общий таймаут.
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL + '/api',
     headers: {
@@ -9,6 +10,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  // Перед каждым запросом подставляем JWT, если он валиден и не пустой.
   const token = localStorage.getItem('token');
   if (token && typeof token === 'string' && token !== 'undefined' && token !== 'null' && token.trim() !== '') {
     config.headers.Authorization = `Bearer ${token}`;
@@ -18,7 +20,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Глобальная обработка ошибок 
+// Глобальная обработка 401: очищаем локальную сессию и возвращаем пользователя на главную.
 api.interceptors.response.use(
     response => response,
     error => {
@@ -40,7 +42,7 @@ export async function getUserWithRetry(retries = 3) {
   try {
     return await api.get('/auth/me');
   } catch (e) {
-    // Если ошибка сети 
+    // Сетевая ошибка без response: выполняем ограниченное число повторных попыток.
     if (!e.response) {
       if (retries > 0) {
         await new Promise(r => setTimeout(r, 2000));
@@ -49,12 +51,12 @@ export async function getUserWithRetry(retries = 3) {
       throw e;
     }
 
-    // Если 401 (редирект или нет)
+    // Ошибка авторизации обрабатывается вызывающей стороной.
     if (e.response.status === 401) {
       throw e; 
     }
 
-    // Если ошибка сервера (5xx) - переподключение
+    // Временные серверные ошибки (5xx) пробуем повторно с паузой.
     if (e.response.status >= 500 && retries > 0) {
       await new Promise(r => setTimeout(r, 2000));
       return getUserWithRetry(retries - 1);

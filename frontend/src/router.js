@@ -16,6 +16,7 @@ import QuizPage from '@/views/QuizPage.vue'
 import QuizResultPage from '@/views/QuizResultPage.vue'
 
 
+// Карта маршрутов приложения: от публичных экранов до страниц, требующих авторизации.
 const routes = [
 
   { path: '/', name: 'landing', component: () => import('@/views/LandingPage.vue') },
@@ -38,7 +39,7 @@ const routes = [
   { path: '/quiz-result', name: 'quiz-result', component: QuizResultPage },
   { path: '/lab', name: 'lab', component: LabPage },
   
-  // 404 — должен быть ПОСЛЕДНИМ
+  // Маршрут-заглушка для несуществующих путей. Должен оставаться последним.
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: ErrorPage }
 ]
 
@@ -48,6 +49,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  // Извлекаем текущую сессию пользователя из localStorage.
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
   let user = null;
@@ -58,24 +60,30 @@ router.beforeEach((to, from, next) => {
     user = null;
   }
 
+  // Публичные маршруты доступны без проверки роли и токена.
   const publicPages = ['/', '/forgot-password', '/reset-password','/auth'];
 
+  // Не блокируем страницу 404 дополнительными условиями.
   if (to.name === 'NotFound') {
     return next();
   }
 
+  // Если маршруту не требуется авторизация — пропускаем переход.
   if (publicPages.includes(to.path)) {
     return next();
   }
 
+  // Незалогиненных пользователей (кроме guest) возвращаем на стартовую страницу.
   if (!token && user?.Role !== 'guest') {
     return next('/');
   }
 
+  // Роль guest ограничена от доступа к персональным и административным разделам.
   if (user?.Role === 'guest' && (to.path === '/profile' || to.path === '/admin')) {
     return next('/home');
   }
 
+  // Админ-панель разрешена только пользователям с ролью admin.
   if (to.path === '/admin' && user?.Role !== 'admin') {
     return next('/home');
   }

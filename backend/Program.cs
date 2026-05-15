@@ -93,7 +93,7 @@ await InitializeDatabaseAsync(app);
 app.Run(); 
 
 // =================================================================
-// 🔧 МЕТОД ИНИЦИАЛИЗАЦИИ БД (все проверки + async/await)
+// МЕТОД ИНИЦИАЛИЗАЦИИ БД (все проверки + async/await)
 // =================================================================
 async Task InitializeDatabaseAsync(WebApplication app)
 {
@@ -104,7 +104,7 @@ async Task InitializeDatabaseAsync(WebApplication app)
     
     db.Database.EnsureCreated();
     
-    // 🔹 Components с описанием взаимодействия
+    // Components с описанием взаимодействия
     if (!await db.Components.AnyAsync())
     {
         Console.WriteLine("[DB] Seeding components...");
