@@ -65,3 +65,11 @@ coverage/
 .nuxt/
 .next/
 .svelte-kit/
+
+
+
+# env
+.env
+*.env
+frontend/.env
+backend/.env
