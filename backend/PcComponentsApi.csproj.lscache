@@ -58,7 +58,7 @@ Controllers/
  AuthController.cs
  BiosController.cs
  BuildsController.cs
- ComponentsConroller.cs
+ ComponentsController.cs
  OverclockController.cs
  QuizController.cs
  UserStatsController.cs

@@ -18,6 +18,7 @@
   display: flex;
   gap: 12px;
   align-items: center;
+  justify-content:flex-end;
 }
 .user-email { font-size: 14px; color: #aaa; }
 .role-badge {

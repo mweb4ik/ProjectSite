@@ -257,3 +257,34 @@ textarea {
     overflow-y: auto;
   }
 }
+
+/* ГЛОБАЛЬНОЕ ЦЕНТРИРОВАНИЕ*/
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #0b0f17; 
+}
+
+/* Основные контейнеры страниц */
+.content, .container, .page-content, 
+main, .admin-wrapper, .lab-wrapper, .bios-wrapper, .builder-page {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto; 
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+
+h1, h2, h3, .page-title, .section-title {
+  margin-top: 0;
+}
+
+.section, .card, .panel {
+  margin: 1rem 0;
+}

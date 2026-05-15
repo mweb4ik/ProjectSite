@@ -20,15 +20,7 @@ public class AdminController : ControllerBase
         _db = db;
     }
 
-    // Универсальный DTO для пагинированного ответа
-    public class PaginatedResult<T>
-    {
-        public List<T> Data { get; set; } = new();
-        public int Page { get; set; }
-        public int PageSize { get; set; }
-        public int TotalCount { get; set; }
-        public bool HasMore => Page * PageSize < TotalCount;
-    }
+    
 
     // DTO для пользователя
     public class UserDto

@@ -24,15 +24,8 @@ public class ComponentsController : ControllerBase
     {
         _db = db;
     }
-public class PaginatedResult<T>
-{
-    public List<T> Data { get; set; } = new();
-    public int Page { get; set; }
-    public int PageSize { get; set; }
-    public int TotalCount { get; set; }
-    public bool HasMore => Page * PageSize < TotalCount;
-}
-    // 🔥 ГЛАВНЫЙ ЭНДПОИНТ: Получение компонентов с фильтрацией
+
+    //Получение компонентов с фильтрацией
     // GET: api/components?name=rtx&category=Videocard
     [HttpGet]
 public async Task<IActionResult> GetComponents(
@@ -66,7 +59,6 @@ public async Task<IActionResult> GetComponents(
         }
     }
     
-    // 🔥 Пагинация
     var totalCount = await query.CountAsync();
     
     var components = await query
@@ -107,7 +99,9 @@ public async Task<IActionResult> GetComponents(
     }
 
     // GET: api/components/categories?category=videocard
-    public async Task<IActionResult> GetComponentsByCategory([FromQuery] string? category)
+    [HttpGet("categories")]
+public async Task<IActionResult> GetComponentsByCategory(
+    [FromQuery] string? category)
     {
         var query = _db.Components.AsQueryable();
         if (!string.IsNullOrEmpty(category))

@@ -33,22 +33,30 @@ const isInBuild = (category) => {
   if (!itemId) return false
   return buildItems.value.some(item => item.id === itemId)
 }
-  const fetchComponents = async () => {
-    loading.value = true
-    try {
-      const params = {}
-      if (selectedCategory.value && selectedCategory.value !== 'all') {
-        params.category = selectedCategory.value
-      }
-      const res = await api.get('/components', { params })
-      components.value = (res.data || []).map(mapComponent)
-    } catch (e) {
-      console.error('Fetch components error:', e)
-      components.value = []
-    } finally {
-      loading.value = false
+ const fetchComponents = async () => {
+  loading.value = true
+
+  try {
+    const params = {}
+
+    if (
+      selectedCategory.value &&
+      selectedCategory.value !== 'all'
+    ) {
+      params.category = selectedCategory.value
     }
+
+    const res = await api.get('/components', { params })
+
+    components.value = (res.data.Data || []).map(mapComponent)
+
+  } catch (e) {
+    console.error('Fetch components error:', e)
+    components.value = []
+  } finally {
+    loading.value = false
   }
+}
 
  const addComponent = (item) => {
   if (isInBuild(item.category)) return false
@@ -91,18 +99,27 @@ const isInBuild = (category) => {
   }
 
   const saveBuild = async () => {
-    if (buildItems.value.length === 0) return
-    saving.value = true
-    try {
-      await api.post('/builds', { components: buildItems.value })
-      alert('Сборка сохранена!')
-    } catch (e) {
-      console.error('Save build error:', e)
-      alert('Ошибка сохранения сборки')
-    } finally {
-      saving.value = false
-    }
+  if (buildItems.value.length === 0) return
+
+  saving.value = true
+
+  try {
+    await api.post('/builds', {
+      componentsJson: JSON.stringify(buildItems.value),
+      totalPrice: totalPrice.value,
+      currency: currency.value,
+      isCompatible: compatibilityResult.value?.isCompatible ?? false
+    })
+
+    alert('Сборка сохранена!')
+
+  } catch (e) {
+    console.error('Save build error:', e)
+    alert('Ошибка сохранения сборки')
+  } finally {
+    saving.value = false
   }
+}
 
   // === EXPORT ===
   return {
