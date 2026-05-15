@@ -24,38 +24,65 @@ public class ComponentsController : ControllerBase
     {
         _db = db;
     }
-
+public class PaginatedResult<T>
+{
+    public List<T> Data { get; set; } = new();
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+    public bool HasMore => Page * PageSize < TotalCount;
+}
     // 🔥 ГЛАВНЫЙ ЭНДПОИНТ: Получение компонентов с фильтрацией
     // GET: api/components?name=rtx&category=Videocard
     [HttpGet]
-    public async Task<IActionResult> GetComponents(
-        [FromQuery] string? name, 
-        [FromQuery] string? category)
+public async Task<IActionResult> GetComponents(
+    [FromQuery] string? name, 
+    [FromQuery] string? category,
+    [FromQuery] int page = 1,
+    [FromQuery] int limit = 5)
+{
+    // Валидация параметров
+    page = Math.Max(1, page);
+    limit = Math.Clamp(limit, 1, 50); // Защита от злоупотреблений
+
+    var query = _db.Components.AsQueryable();
+    
+    // Фильтр по имени 
+    if (!string.IsNullOrEmpty(name))
     {
-        var query = _db.Components.AsQueryable();
-        
-        // Фильтр по имени 
-        if (!string.IsNullOrEmpty(name))
-        {
-            query = query.Where(c => c.Name.Contains(name));
-        }
-        
-        //  Фильтр по категории 
-        if (!string.IsNullOrEmpty(category))
-        {
-            if (Enum.TryParse<ComponentCategory>(category, ignoreCase: true, out var parsedCategory))
-            {
-                query = query.Where(c => c.Category == parsedCategory);
-            }
-            else
-            {
-                return BadRequest(new { message = "Неверный тип категории. Допустимые: Processor, Motherboard, Ram, Storage, Videocard, Cooling" });
-            }
-        }
-        
-        var components = await query.ToListAsync();
-        return Ok(components);
+        query = query.Where(c => c.Name.Contains(name));
     }
+    
+    // Фильтр по категории 
+    if (!string.IsNullOrEmpty(category))
+    {
+        if (Enum.TryParse<ComponentCategory>(category, ignoreCase: true, out var parsedCategory))
+        {
+            query = query.Where(c => c.Category == parsedCategory);
+        }
+        else
+        {
+            return BadRequest(new { message = "Неверный тип категории" });
+        }
+    }
+    
+    // 🔥 Пагинация
+    var totalCount = await query.CountAsync();
+    
+    var components = await query
+        .OrderBy(c => c.Name) 
+        .Skip((page - 1) * limit)
+        .Take(limit)
+        .ToListAsync();
+
+    return Ok(new PaginatedResult<object>
+    {
+        Data = components.Cast<object>().ToList(), 
+        Page = page,
+        PageSize = limit,
+        TotalCount = totalCount
+    });
+}
 
     // GET: api/components/{id} - Получение одного компонента
     [HttpGet("{id}")]

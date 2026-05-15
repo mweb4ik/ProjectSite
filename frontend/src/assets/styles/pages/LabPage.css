@@ -1,8 +1,8 @@
 
 .lab-wrapper {
   min-height: 100vh;
-  padding-top: 100px; /* Место для хедера */
-  background: #0b0f17; /* Тёмный фон */
+  padding-top: 100px; 
+  background: #0b0f17; 
 }
 
 .lab-page {
@@ -28,41 +28,45 @@
 /* HERO */
 
 .hero {
+  display: flex;            
+  flex-direction: column;     
+  justify-content: center;  
+  align-items: center;       
+  text-align: center;        
+  
   position: relative;
-  margin-bottom: 40px;
+  margin: 0 auto 40px;        
   overflow: hidden;
   border-radius: 24px;
-  padding: 50px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(0,255,170,0.08),
-      rgba(0,140,255,0.08)
-    );
-
+  padding: 60px;
+  background: linear-gradient(135deg, rgba(0,255,170,0.08), rgba(0,140,255,0.08));
   border: 1px solid rgba(255,255,255,0.08);
+  min-height: 300px;         
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
+  max-width: 800px;           
+  width: 100%;
 }
 
 .hero-subtitle {
   color: #00ffd0;
   letter-spacing: 3px;
-  margin-bottom: 10px;
+  margin: 0 auto 10px;        
   font-size: 14px;
 }
 
 .hero h1 {
   font-size: 54px;
-  margin-bottom: 20px;
+  margin: 0 auto 20px;      
   font-family: 'Orbitron', sans-serif;
 }
 
 .hero-text {
   max-width: 700px;
+  margin: 0 auto;            
   color: #b7c0d8;
   line-height: 1.7;
   font-size: 18px;
@@ -77,8 +81,8 @@
   background: #00ffd0;
   opacity: 0.12;
   filter: blur(120px);
+  z-index: 1;
 }
-
 /* GRID */
 
 .lab-grid {

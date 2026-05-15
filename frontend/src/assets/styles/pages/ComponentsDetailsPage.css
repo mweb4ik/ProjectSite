@@ -339,3 +339,29 @@
     opacity: 0.8;
   }
 }
+/* ===== ПАГИНАЦИЯ НА СТРАНИЦЕ ДЕТАЛЕЙ  ===== */
+.nav-pagination {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.nav-pagination .btn-back,
+.nav-pagination .btn-next {
+  background: rgba(0, 163, 255, 0.15);
+  color: #00a3ff;
+  border: 1px solid rgba(0, 163, 255, 0.3);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-pagination .btn-back:hover,
+.nav-pagination .btn-next:hover {
+  background: rgba(0, 163, 255, 0.25);
+  transform: translateY(-2px);
+}

@@ -77,6 +77,19 @@
     class="search-input"
   />
 </div>
+<div class="pagination-wrapper" v-if="components.length > 0">
+  <button 
+    v-if="hasMore" 
+    class="btn-pagination"
+    @click="fetchComponents(true)"
+    :disabled="loadingMore"
+  >
+    {{ loadingMore ? '⏳ Загрузка...' : `⬇️ Загрузить ещё (${itemsPerPage})` }}
+  </button>
+  <span v-else class="pagination-info">
+    ✅ Все компоненты загружены ({{ totalComponents }})
+  </span>
+</div>
       <div v-if="loading" class="loader">Загрузка...</div>
 
       <div v-else-if="components.length === 0" class="empty-state">
@@ -148,7 +161,11 @@ const loading = ref(false)
 
 const searchQuery = ref('')
 const currentCategory = ref('all')
-
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+const totalComponents = ref(0)
+const hasMore = ref(true)
+const loadingMore = ref(false)
 let timeout = null
 
 const getImageUrl = (path) => {
@@ -162,38 +179,64 @@ const onImageError = (e) => {
 }
 const setCategory = (category) => {
   currentCategory.value = category
-  searchQuery.value = '' //  Сброс поиска при смене категории
-  fetchComponents()
+  searchQuery.value = ''
+  currentPage.value = 1  
+  hasMore.value = true
+  fetchComponents(false) 
 }
-const fetchComponents = async () => {
-  loading.value = true
+
+
+const fetchComponents = async (append = false) => {
+  if (!append) {
+    loading.value = true
+  } else {
+    loadingMore.value = true
+  }
 
   try {
-    const params = {}
+    const params = {
+      page: append ? currentPage.value + 1 : 1,
+      limit: itemsPerPage.value
+    }
 
     if (currentCategory.value && currentCategory.value !== 'all') {
       params.category = currentCategory.value
     }
-
 
     if (searchQuery.value.trim()) {
       params.name = searchQuery.value.trim()
     }
 
     const res = await api.get('/components', { params })
-    components.value = (res.data || []).map(mapComponent)
+    
+    const { Data, Page, TotalCount, HasMore } = res.data
+    
+    if (append) {
 
+      components.value = [...components.value, ...Data.map(mapComponent)]
+      currentPage.value = Page
+    } else {
+      components.value = Data.map(mapComponent)
+      currentPage.value = 1
+    }
+    
+    totalComponents.value = TotalCount
+    hasMore.value = HasMore
+    
   } catch (e) {
     console.error(e)
-    components.value = []
+    if (!append) components.value = []
   } finally {
     loading.value = false
+    loadingMore.value = false
   }
 }
 
 const handleSearch = () => {
   clearTimeout(timeout)
-  timeout = setTimeout(fetchComponents, 300)
+  currentPage.value = 1 
+  hasMore.value = true
+  timeout = setTimeout(() => fetchComponents(false), 300)
 }
 
 const selectComponent = (item) => {
