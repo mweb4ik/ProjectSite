@@ -1,16 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PcComponentsApi.Data;
 using PcComponentsApi.Models;
-using MailKit.Net.Smtp;
-using MimeKit;
-using MailKit.Security;
-using Microsoft.AspNetCore.Authorization;
-using System.Text.Json.Serialization;
+
 namespace PcComponentsApi.Controllers;
 
 [ApiController]
@@ -26,28 +24,49 @@ public class AuthController : ControllerBase
         _config = config;
     }
 
+    // ================= ME =================
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetMe()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+            return NotFound();
+
+        return Ok(new
+        {
+            user.Id,
+            user.Username,
+            user.Email,
+            user.Role
+        });
+    }
+
+    // ================= REGISTER =================
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest req)
     {
-        if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Password) || string.IsNullOrWhiteSpace(req.Username))
-            return BadRequest(new { message = "Все поля обязательны" });
+        if (req == null) return BadRequest();
 
-        if (req.Password.Length < 6)
-            return BadRequest(new { message = "Пароль должен быть не менее 6 символов" });
+        if (string.IsNullOrWhiteSpace(req.Email) ||
+            string.IsNullOrWhiteSpace(req.Password) ||
+            string.IsNullOrWhiteSpace(req.Username))
+            return BadRequest(new { message = "All fields required" });
 
-        if (req.Username.Length < 4)
-            return BadRequest(new { message = "Имя пользователя должно быть не менее 4 символов" });
+        var email = req.Email.Trim().ToLower();
 
-        if (await _db.Users.AnyAsync(u => u.Email.ToLower() == req.Email.ToLower()))
-            return Conflict(new { message = "Пользователь с таким email уже существует" });
-
-        if (await _db.Users.AnyAsync(u => u.Username == req.Username))
-            return Conflict(new { message = "Пользователь с таким именем пользователя уже существует" });
+        if (await _db.Users.AnyAsync(u => u.Email.ToLower() == email))
+            return Conflict(new { message = "Email already used" });
 
         var user = new User
         {
-            Username = req.Username,
-            Email = req.Email,
+            Id = Guid.NewGuid().ToString(),
+            Username = req.Username.Trim(),
+            Email = email,
             PasswordHash = PasswordService.HashPassword(req.Password),
             Role = "standard",
             CreatedAt = DateTime.UtcNow
@@ -56,104 +75,168 @@ public class AuthController : ControllerBase
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
 
-        return Ok(new AuthResponse
-        {
-            Token = GenerateJwt(user),
-            Username = user.Username,
-            Email = user.Email,
-            Role = user.Role
-        });
+        return Ok(GenerateAuth(user));
     }
 
+    // ================= LOGIN =================
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
+        if (req == null) return BadRequest();
+
+        var login = req.Login?.Trim().ToLower();
+
         var user = await _db.Users.FirstOrDefaultAsync(u =>
-            u.Email.ToLower() == req.Login.ToLower() || u.Username == req.Login);
+            u.Email.ToLower() == login || u.Username.ToLower() == login);
 
-        if (user == null || !PasswordService.VerifyPassword(req.Password, user.PasswordHash))
-            return Unauthorized(new { message = "Неверный email или пароль" });
+        if (user == null ||
+            !PasswordService.VerifyPassword(req.Password, user.PasswordHash))
+            return Unauthorized(new { message = "Invalid credentials" });
 
-        return Ok(new AuthResponse
-        {
-            Token = GenerateJwt(user),
-            Username = user.Username,
-            Email = user.Email,
-            Role = user.Role
-        });
+        return Ok(GenerateAuth(user));
     }
 
+    // ================= FORGOT PASSWORD =================
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
     {
-        var email = req.Email?.Trim().ToLower();
+        if (req == null || string.IsNullOrWhiteSpace(req.Email))
+            return BadRequest();
+
+        var email = req.Email.Trim().ToLower();
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
-        if (user == null) return Ok(); // Не показ, что пользователя нет
+        if (user == null)
+            return Ok(new { message = "If email exists, reset link sent" });
 
-        user.ResetToken = Guid.NewGuid().ToString();
+        user.ResetToken = Guid.NewGuid().ToString("N");
         user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(30);
+
+
+        user.RefreshToken = null;
+        user.RefreshTokenExpiry = null;
+
         await _db.SaveChangesAsync();
 
-        try
+        var frontendUrl = _config["Frontend:Url"] ?? "http://localhost:5173";
+        var resetLink = $"{frontendUrl}/reset-password?token={user.ResetToken}";
+
+        Console.WriteLine($"RESET LINK: {resetLink}");
+
+        return Ok(new
         {
-            var emailSection = _config.GetSection("Email");
-            var smtpEmail = emailSection["Address"] ?? throw new Exception("Email не задан");
-            var smtpPassword = emailSection["Password"] ?? throw new Exception("Password не задан");
-            var host = emailSection["Host"] ?? "smtp.gmail.com";
-            var port = int.Parse(emailSection["Port"] ?? "587");
-
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("PcArchitekture", smtpEmail));
-            message.To.Add(new MailboxAddress(user.Username, user.Email));
-            message.Subject = "Сброс пароля";
-            message.Body = new TextPart("plain") { Text = $"http://localhost:5173/reset-password?token={user.ResetToken}" };
-
-            using var client = new SmtpClient();
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(smtpEmail, smtpPassword);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = ex.Message });
-        }
-
-        return Ok();
+            message = "If email exists, reset link sent",
+            link = resetLink
+        });
     }
 
+    // ================= RESET PASSWORD =================
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
     {
+        if (req == null ||
+            string.IsNullOrWhiteSpace(req.Token) ||
+            string.IsNullOrWhiteSpace(req.NewPassword))
+            return BadRequest();
+
         var user = await _db.Users.FirstOrDefaultAsync(u => u.ResetToken == req.Token);
 
         if (user == null || user.ResetTokenExpiry < DateTime.UtcNow)
-            return BadRequest(new { message = "Неверный или просроченный токен" });
+            return BadRequest(new { message = "Token invalid or expired" });
 
         user.PasswordHash = PasswordService.HashPassword(req.NewPassword);
         user.ResetToken = null;
         user.ResetTokenExpiry = null;
 
+        user.RefreshToken = null;
+        user.RefreshTokenExpiry = null;
+
         await _db.SaveChangesAsync();
 
-        return Ok(new AuthResponse
+        return Ok(new { message = "Password changed successfully" });
+    }
+
+    // ================= REFRESH TOKEN=================
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest req)
+    {
+        if (req?.RefreshToken == null)
+            return BadRequest(new { message = "Refresh token required" });
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.RefreshToken == req.RefreshToken);
+
+        // Валидация: существует, не истёк
+        if (user == null || user.RefreshTokenExpiry < DateTime.UtcNow)
+            return Unauthorized(new { message = "Invalid refresh token" });
+
+        user.RefreshToken = null;
+        user.RefreshTokenExpiry = null;
+
+        var result = GenerateAuth(user); 
+
+        await _db.SaveChangesAsync();
+
+        return Ok(result);
+    }
+
+    // ================= LOGOUT  =================
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var user = await _db.Users.FindAsync(userId);
+        if (user != null)
         {
-            Token = GenerateJwt(user),
+            user.RefreshToken = null;
+            user.RefreshTokenExpiry = null;
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(new { message = "Logged out" });
+    }
+
+    // ================= JWT HELPERS =================
+
+    private string GenerateRefreshToken()
+    {
+        var bytes = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(bytes);
+        return Convert.ToBase64String(bytes);
+    }
+
+    private object GenerateAuth(User user)
+    {
+        var refreshToken = GenerateRefreshToken();
+
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(1);
+
+
+        return new
+        {
+            Token = GenerateJwt(user, expiresInMinutes: 15), 
+            RefreshToken = refreshToken, 
             Username = user.Username,
             Email = user.Email,
             Role = user.Role
-        });
+        };
     }
 
-    private string GenerateJwt(User user)
+    private string GenerateJwt(User user, int expiresInMinutes = 15)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345"));
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "SuperSecretKey12345SuperSecretKey12345"));
+
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role)
@@ -161,27 +244,10 @@ public class AuthController : ControllerBase
 
         var token = new JwtSecurityToken(
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(12),
+            expires: DateTime.UtcNow.AddMinutes(expiresInMinutes),
             signingCredentials: creds
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
-   [HttpGet("me")]
-[Authorize]
-public async Task<IActionResult> Me()
-{
-    var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    if (!Guid.TryParse(userIdStr, out Guid userId))
-        return Unauthorized();
-    var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId.ToString());
-    if (user == null) return NotFound();
-
-    return Ok(new {
-        Username = user.Username,
-        Email = user.Email,
-        Role = user.Role
-    });
-}
 }

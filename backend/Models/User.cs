@@ -10,4 +10,6 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? ResetToken { get; set; }
 public DateTime? ResetTokenExpiry { get; set; }
+public string? RefreshToken { get; set; }
+public DateTime? RefreshTokenExpiry { get; set; }
 }

@@ -10,11 +10,16 @@ public class Component
     public string Specifications { get; set; } = string.Empty;
     public string Socket { get; set; } = string.Empty;
     public int PowerConsumption { get; set; } // в ваттах
+
+       public string? ImageUrl { get; set; } 
 }
 public enum ComponentCategory
 {
-    CPU,
-    GPU,
-    RAM,
-    Motherboard
+    Processor,
+    Motherboard,
+    Ram,
+    Storage,
+    Videocard,
+    Cooling
+
 }

@@ -1,10 +1,7 @@
-
 <template>
-  <div id="app"> <!-- Header в отдельный компонент+валидация пароля+разделение+ подклбчение к глобальным стилям+папки -->
+  <div id="app">
     <AppHeader :user="user" @logout="logout" />
-   
     <main class="content">
-      <!-- Скелетон -->
       <div v-if="loading" class="skeleton-wrapper">
         <div class="skeleton-img"></div>
         <div class="skeleton-text"></div>
@@ -13,23 +10,13 @@
           <div v-for="i in 6" :key="i" class="skeleton-btn"></div>
         </div>
       </div>
-
       <div v-else>
         <img src="/images/pc.png" alt="Компьютер" class="hero-img" />
-        <p class="welcome-text">
-          Добро пожаловать, <span class="highlight">{{ user.email }}</span>!
-        </p>
+        <p class="welcome-text">Добро пожаловать, {{ user.Username }}</p>
         <p class="subtitle">Выберите компонент для изучения</p>
-
         <div class="buttons-grid">
-          <button class="btn-component green" @click="goTo('videocard')">📟 Видеокарта</button>
-          <button class="btn-component red" @click="goTo('processor')">🔲 Процессор</button>
-          <button class="btn-component blue" @click="goTo('motherboard')">🀆 Материнская плата</button>
-          <button class="btn-component yellow" @click="goTo('cooling')">𖣘 Охлаждение</button>
-          <button class="btn-component yellow" @click="goTo('ram')">𝐑𝐚𝐦 Оперативная память</button>
-          <button class="btn-component dark" @click="goTo('storage')">🗄️ Накопитель</button>
+          <button class="btn-component all-components" @click="goTo('all')">🖥️ Все комплектующие</button>
         </div>
-
         <div class="sections-grid">
           <p class="subtitle">Или выберите раздел:</p>
           <button class="btn-section" @click="goTo('lab')">⚡ Лаборатория разгона</button>
@@ -44,81 +31,61 @@
   </div>
 </template>
 
-<script>
-import { useRouter } from 'vue-router'
-import AppHeader from '@/components/AppHeader.vue'
-import { components } from '@/data/components'
-export default {
-  name: 'HomePage',
-  setup() {
-    const router = useRouter()
-    return { router }
-  },
-  data() {
-    return {
-      user: { email: '', role: '' },
-      loading: true
-    }
-  },
-  computed: {
-    roleClass() {
-      switch(this.user.role.toLowerCase()) {
-        case 'admin': return 'admin-badge'
-        case 'user': return 'user-badge'
-        default: return 'guest-badge'
-      }
-    }
-  },
-async mounted() {
-  const token = localStorage.getItem('token');
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import AppHeader from '@/components/AppHeader.vue';
+import { getUserWithRetry } from '@/api';
 
-  if (!token) {
-    this.router.push('/');
-    return;
-  }
+const router = useRouter();
+const user = ref({ Email: '', Role: '', Username: 'Загрузка...', Id: '' });
+const loading = ref(true);
 
+onMounted(async () => {
   const savedUser = localStorage.getItem('user');
   if (savedUser) {
     try {
       const parsed = JSON.parse(savedUser);
-      this.user.email = parsed.Email || 'Неизвестно';
-      this.user.role = parsed.Role || 'guest';
-    } catch { }
+      user.value = {
+        Id: parsed.Id || '',
+        Email: parsed.Email || '',
+        Role: parsed.Role || '',
+        Username: parsed.Username || 'Пользователь'
+      };
+    } catch (e) {
+      console.error('[HOME] Ошибка парсинга сохранённого пользователя', e);
+    }
   }
 
   try {
-    const res = await api.get('/auth/me');  
-
-    this.user.email = res.data.email || res.data.Email || 'Неизвестно';
-    this.user.role = res.data.role || res.data.Role || 'guest';
-
-    localStorage.setItem('user', JSON.stringify({
-      email: this.user.email,
-      role: this.user.role
-    }));
-
+    const res = await getUserWithRetry();
+    user.value = {
+      Id: res.data.Id || user.value.Id,
+      Email: res.data.Email || user.value.Email,
+      Role: res.data.Role || user.value.Role,
+      Username: res.data.Username || user.value.Username
+    };
+    localStorage.setItem('user', JSON.stringify(user.value));
+    console.log('[HOME] Данные пользователя обновлены с сервера');
   } catch (e) {
-    console.error(e);
-    // Если токен протух — редирект на логин
-    localStorage.removeItem('token');
-    this.router.push('/');
+    console.warn('[HOME] Сервер не ответил. Используются локальные данные.');
   } finally {
-    this.loading = false;
+    loading.value = false;
   }
-},
-  methods: {
-    logout() {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      this.router.push('/')
-    },
-goTo(page) {
-  if (components[page]) {
-    this.router.push('/component/' + page)
+});
+
+const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  router.push('/');
+};
+
+const goTo = (page) => {
+  const componentPages = ['videocard', 'processor', 'motherboard', 'cooling', 'ram', 'storage'];
+  if (page === 'all') {
+    router.push('/component/all');
   } else {
-    this.router.push('/' + page)
+    router.push(componentPages.includes(page) ? `/component/${page}` : `/${page}`);
   }
-}
-}
-}
-</script>
+};
+</script> 

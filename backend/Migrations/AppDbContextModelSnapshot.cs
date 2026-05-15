@@ -15,7 +15,40 @@ namespace PcComponentsApi.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.3");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
+
+            modelBuilder.Entity("PcComponentsApi.Models.BiosVersion", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsBeta")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MotherboardId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ReleaseDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Stability")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MotherboardId");
+
+                    b.ToTable("BiosVersions");
+                });
 
             modelBuilder.Entity("PcComponentsApi.Models.Component", b =>
                 {
@@ -27,6 +60,9 @@ namespace PcComponentsApi.Migrations
 
                     b.Property<string>("Currency")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -50,6 +86,107 @@ namespace PcComponentsApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Components");
+                });
+
+            modelBuilder.Entity("PcComponentsApi.Models.ComponentView", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ComponentId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ViewedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ComponentViews");
+                });
+
+            modelBuilder.Entity("PcComponentsApi.Models.CpuSupport", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BiosVersionId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CpuId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsSupported")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BiosVersionId");
+
+                    b.HasIndex("CpuId");
+
+                    b.ToTable("CpuSupports");
+                });
+
+            modelBuilder.Entity("PcComponentsApi.Models.Motherboard", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Chipset")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Socket")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Motherboards");
+                });
+
+            modelBuilder.Entity("PcComponentsApi.Models.OverclockProfile", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CpuId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Frequency")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("Stability")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("Temperature")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Voltage")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OverclockProfiles");
                 });
 
             modelBuilder.Entity("PcComponentsApi.Models.PCBuild", b =>
@@ -78,6 +215,31 @@ namespace PcComponentsApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PCBuilds");
+                });
+
+            modelBuilder.Entity("PcComponentsApi.Models.QuizQuestion", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CorrectOptionIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Options")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("QuizQuestions");
                 });
 
             modelBuilder.Entity("PcComponentsApi.Models.QuizResult", b =>
@@ -119,6 +281,12 @@ namespace PcComponentsApi.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RefreshTokenExpiry")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ResetToken")
                         .HasColumnType("TEXT");
 
@@ -136,6 +304,41 @@ namespace PcComponentsApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("PcComponentsApi.Models.BiosVersion", b =>
+                {
+                    b.HasOne("PcComponentsApi.Models.Motherboard", "Motherboard")
+                        .WithMany()
+                        .HasForeignKey("MotherboardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Motherboard");
+                });
+
+            modelBuilder.Entity("PcComponentsApi.Models.CpuSupport", b =>
+                {
+                    b.HasOne("PcComponentsApi.Models.BiosVersion", "BiosVersion")
+                        .WithMany("SupportedCpus")
+                        .HasForeignKey("BiosVersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PcComponentsApi.Models.Component", "Cpu")
+                        .WithMany()
+                        .HasForeignKey("CpuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BiosVersion");
+
+                    b.Navigation("Cpu");
+                });
+
+            modelBuilder.Entity("PcComponentsApi.Models.BiosVersion", b =>
+                {
+                    b.Navigation("SupportedCpus");
                 });
 #pragma warning restore 612, 618
         }

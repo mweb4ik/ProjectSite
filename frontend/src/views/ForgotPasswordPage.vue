@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+        <AppHeader :user="user" @logout="logout" />
     <header class="header">
       <h1 class="highlight">Восстановление пароля</h1>
     </header>
@@ -24,8 +25,7 @@
 </template>
 
 <script>
-const API = 'http://localhost:5124/api/auth'
-
+import '@/assets/styles/pages/ForgotPasswordPage.css'
 export default {
   name: 'ForgotPasswordPage',
   data() {
@@ -46,11 +46,9 @@ export default {
       this.error = ''
 
       try {
-        const res = await fetch(`${API}/forgot-password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ Email:this.Email  })
-        })
+        const res = await api.post('/auth/forgot-password', {
+        Email: this.Email
+      })
 
         if (!res.ok) {
           this.error = 'Ошибка отправки'
